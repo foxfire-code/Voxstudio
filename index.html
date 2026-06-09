@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoxStudio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --card: #222222;
+  --border: #333333;
+  --accent: #1db954;
+  --accent2: #1ed760;
+  --red: #ff4444;
+  --blue: #4a9eff;
+  --yellow: #ffb800;
+  --text: #ffffff;
+  --muted: #888888;
+  --dim: #555555;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  user-select: none;
+}
+
+/* TOP BAR */
+.topbar {
+  background: #000;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.project-name {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* TRANSPORT BAR */
+.transport {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.transport-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-play-all {
+  background: var(--accent);
+  color: #000;
+}
+
+.btn-play-all:hover { background: var(--accent2); }
+
+.btn-stop-all {
+  background: var(--border);
+  color: var(--text);
+}
+
+.btn-stop-all:hover { background: #444; }
+
+.transport-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.transport-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.transport-status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.rec-indicator {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--red);
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: blink 0.8s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* MAIN CONTENT */
+.main {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 52px - 57px);
+  overflow: hidden;
+}
+
+/* BEAT SECTION */
+.beat-section {
+  background: #111;
+  border-bottom: 2px solid var(--border);
+  padding: 12px 16px;
+}
+
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.beat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.beat-upload-zone {
+  flex: 1;
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+}
+
+.beat-upload-zone:hover {
+  border-color: var(--accent);
+  background: rgba(29,185,84,0.05);
+}
+
+.beat-upload-zone.has-beat {
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+.beat-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.beat-text {
+  flex: 1;
+}
+
+.beat-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.beat-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.beat-waveform {
+  flex: 1;
+  height: 36px;
+  display: none;
+}
+
+.beat-waveform canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.beat-controls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+
+/* VOCAL TRACKS */
+.tracks-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.tracks-section::-webkit-scrollbar { width: 4px; }
+.tracks-section::-webkit-scrollbar-track { background: transparent; }
+.tracks-section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.track-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.track-card.recording { border-color: var(--red); }
+.track-card.has-audio { border-color: #333; }
+
+.track-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.track-color-bar {
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.track-label {
+  flex: 1;
+}
+
+.track-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.track-role {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.track-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Level meter */
+.level-meter {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 18px;
+  width: 40px;
+}
+
+.level-bar {
+  flex: 1;
+  background: var(--border);
+  border-radius: 1px;
+  min-height: 2px;
+  transition: height 0.04s;
+}
+
+/* Waveform */
+.track-waveform {
+  padding: 0 14px 10px;
+  display: none;
+}
+
+.track-waveform canvas {
+  width: 100%;
+  height: 40px;
+  border-radius: 6px;
+  background: #1a1a1a;
+}
+
+/* Vocal badges */
+.vocal-badges {
+  display: none;
+  padding: 0 14px 10px;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vbadge {
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.vb-green { background: rgba(29,185,84,0.15); color: #1db954; border: 1px solid rgba(29,185,84,0.3); }
+.vb-blue { background: rgba(74,158,255,0.15); color: #4a9eff; border: 1px solid rgba(74,158,255,0.3); }
+.vb-yellow { background: rgba(255,184,0,0.15); color: #ffb800; border: 1px solid rgba(255,184,0,0.3); }
+.vb-red { background: rgba(255,68,68,0.15); color: #ff6666; border: 1px solid rgba(255,68,68,0.3); }
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  padding: 7px 12px;
+}
+
+.btn:active { transform: scale(0.96); }
+
+.btn-rec {
+  background: rgba(255,68,68,0.15);
+  color: var(--red);
+  border: 1px solid rgba(255,68,68,0.35);
+}
+
+.btn-rec.active {
+  background: var(--red);
+  color: #fff;
+  animation: recPulse 1s ease-in-out infinite;
+}
+
+@keyframes recPulse {
+  0%,100%{ box-shadow: 0 0 0 0 rgba(255,68,68,0.4); }
+  50%{ box-shadow: 0 0 0 6px transparent; }
+}
+
+.btn-sm-play {
+  background: rgba(29,185,84,0.15);
+  color: var(--accent);
+  border: 1px solid rgba(29,185,84,0.3);
+}
+
+.btn-sm-del {
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid transparent;
+  padding: 7px 8px;
+}
+
+.btn-sm-del:hover { color: var(--red); border-color: rgba(255,68,68,0.3); }
+
+/* Add track */
+.add-track-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.82rem;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.add-track-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* BOTTOM BAR - AutoMix */
+.bottom-bar {
+  background: #000;
+  border-top: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  bottom: 0;
+}
+
+.producer-msg {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.producer-msg span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-automix {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 22px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-automix:hover { background: var(--accent2); transform: scale(1.02); }
+.btn-automix:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-automix.mixing { animation: mixGlow 1.2s ease-in-out infinite; }
+
+@keyframes mixGlow {
+  0%,100%{ box-shadow: 0 0 0 0 rgba(29,185,84,0.4); }
+  50%{ box-shadow: 0 0 20px rgba(29,185,84,0.5); }
+}
+
+/* MIX MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.modal-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.mix-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.mix-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  transition: color 0.3s;
+}
+
+.mix-step.active { color: var(--text); }
+.mix-step.done { color: var(--accent); }
+
+.step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.mix-step.active .step-icon { background: var(--accent); color: #000; animation: dotPulse 1s ease-in-out infinite; }
+.mix-step.done .step-icon { background: var(--accent); color: #000; }
+@keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+
+/* Mix result */
+.mix-result {
+  display: none;
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.mix-result-label {
+  font-size: 0.65rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.mix-result-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.mix-result-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-play-result {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.btn-play-result:hover { background: var(--accent2); }
+
+.btn-dl {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-dl:hover { border-color: var(--accent); color: var(--accent); }
+
+.mix-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.mix-stat { text-align: center; flex: 1; }
+.mix-stat-val { font-size: 1rem; font-weight: 700; color: var(--accent); }
+.mix-stat-lbl { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* Hidden file input */
+#beat-file-input { display: none; }
+#track-file-input { display: none; }
+
+/* Upload option for tracks */
+.track-upload-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 10px;
+}
+
+.btn-upload-vocal {
+  background: rgba(74,158,255,0.1);
+  color: var(--blue);
+  border: 1px solid rgba(74,158,255,0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.btn-upload-vocal:hover { background: rgba(74,158,255,0.2); }
+</style>
+</head>
+<body>
+
+<!-- Hidden inputs -->
+<input type="file" id="beat-file-input" accept=".mp3,.wav,audio/*" onchange="handleBeatUpload(event)">
+<input type="file" id="track-file-input" accept=".mp3,.wav,audio/*">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="app-logo">VoxStudio</div>
+    <div class="project-name">New Project</div>
+  </div>
+  <div class="topbar-right">
+    <div class="rec-indicator" id="global-rec">
+      <div class="rec-dot"></div> REC
+    </div>
+  </div>
+</div>
+
+<!-- TRANSPORT -->
+<div class="transport">
+  <button class="transport-btn btn-play-all" onclick="playAll()" id="play-all-btn" title="Play all">▶</button>
+  <button class="transport-btn btn-stop-all" onclick="stopAll()" title="Stop">■</button>
+  <div class="transport-info">
+    <div class="transport-status" id="transport-status">Stopped</div>
+    <div class="transport-time" id="transport-time">0:00</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- BEAT UPLOAD -->
+  <div class="beat-section">
+    <div class="section-label">Beat / Instrumental</div>
+    <div class="beat-row">
+      <div class="beat-upload-zone" id="beat-zone" onclick="document.getElementById('beat-file-input').click()">
+        <div class="beat-icon">🎵</div>
+        <div class="beat-text">
+          <div class="beat-title" id="beat-title">Upload your beat</div>
+          <div class="beat-sub" id="beat-sub">Tap to browse — MP3 or WAV</div>
+        </div>
+      </div>
+      <canvas id="beat-canvas" class="beat-waveform" width="0" height="36" style="display:none; flex:1; height:36px;"></canvas>
+      <div class="beat-controls" id="beat-controls" style="display:none">
+        <button class="icon-btn" id="beat-play-btn" onclick="playBeat()" title="Play beat">▶</button>
+        <button class="icon-btn" onclick="removeBeat()" title="Remove beat">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOCAL TRACKS -->
+  <div class="tracks-section" id="tracks-container">
+    <div class="section-label">Vocal Tracks</div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="producer-msg" id="producer-msg">
+    Upload a beat then <span>record your vocals</span> on top.
+  </div>
+  <button class="btn-automix" id="automix-btn" onclick="openMixModal()" disabled>
+    ⚡ AutoMix
+  </button>
+</div>
+
+<!-- ADD TRACK (inside tracks section, rendered dynamically) -->
+
+<!-- MIX MODAL -->
+<div class="modal-overlay" id="mix-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🎛️ Producer AutoMix</div>
+    <div class="modal-sub">Sit back — the AI is producing your track right now.</div>
+
+    <div class="mix-steps" id="mix-steps">
+      <div class="mix-step" id="mstep-1"><div class="step-icon">🎤</div> Analysing vocal tones...</div>
+      <div class="mix-step" id="mstep-2"><div class="step-icon">🔍</div> Detecting lead & backing roles...</div>
+      <div class="mix-step" id="mstep-3"><div class="step-icon">🎚️</div> Applying intelligent EQ...</div>
+      <div class="mix-step" id="mstep-4"><div class="step-icon">💪</div> Compressing & balancing levels...</div>
+      <div class="mix-step" id="mstep-5"><div class="step-icon">🌊</div> Adding reverb & depth...</div>
+      <div class="mix-step" id="mstep-6"><div class="step-icon">↔️</div> Stereo panning & imaging...</div>
+      <div class="mix-step" id="mstep-7"><div class="step-icon">🎧</div> Mixing with beat & mastering...</div>
+    </div>
+
+    <div class="mix-result" id="mix-result">
+      <div class="mix-result-label">✓ Mix Complete</div>
+      <div class="mix-result-title" id="mix-result-title">Your Track is Ready</div>
+      <div class="mix-result-btns">
+        <button class="btn-play-result" id="play-result-btn" onclick="playFinalMix()">▶ Play</button>
+        <button class="btn-dl" onclick="downloadMix()">↓ Download WAV</button>
+        <button class="btn-dl" onclick="closeMixModal()">✕ Close</button>
+      </div>
+      <div class="mix-stats">
+        <div class="mix-stat"><div class="mix-stat-val" id="stat-tracks">0</div><div class="mix-stat-lbl">Tracks</div></div>
+        <div class="mix-stat"><div class="mix-stat-val" id="stat-effects">6</div><div class="mix-stat-lbl">Effects</div></div>
+        <div class="mix-stat"><div class="mix-stat-val" id="stat-dur">0s</div><div class="mix-stat-lbl">Duration</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================
+// STATE
+// =====================
+let audioCtx = null;
+let tracks = [];
+let trackCounter = 0;
+let beatBuffer = null;
+let beatSource = null;
+let beatPlaying = false;
+let finalMixBuffer = null;
+let finalMixSource = null;
+let mixPlaying = false;
+let activeRecordingId = null;
+
+const TRACK_COLORS = ['#1db954','#4a9eff','#ff6b6b','#ffb800','#b44aff','#ff6b35','#00d4ff'];
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// =====================
+// PRODUCER AI MESSAGES
+// =====================
+function setMsg(html) {
+  document.getElementById('producer-msg').innerHTML = html;
+}
+
+function checkReady() {
+  const hasAudio = tracks.some(t => t.buffer);
+  document.getElementById('automix-btn').disabled = !hasAudio;
+  if (hasAudio) {
+    const count = tracks.filter(t => t.buffer).length;
+    setMsg(`${count} vocal track${count>1?'s':''} ready. <span>Hit AutoMix</span> when done.`);
+  }
+}
+
+// =====================
+// BEAT UPLOAD
+// =====================
+async function handleBeatUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const ctx = getAudioCtx();
+  const arrayBuffer = await file.arrayBuffer();
+  beatBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+  document.getElementById('beat-title').textContent = file.name.replace(/\.[^.]+$/, '');
+  document.getElementById('beat-sub').textContent = `${beatBuffer.duration.toFixed(1)}s • ${(file.size/1024/1024).toFixed(1)}MB`;
+  document.getElementById('beat-zone').classList.add('has-beat');
+  document.getElementById('beat-controls').style.display = 'flex';
+
+  // Draw waveform
+  const canvas = document.getElementById('beat-canvas');
+  canvas.style.display = 'block';
+  document.getElementById('beat-zone').style.display = 'none';
+  drawWaveformOnCanvas(canvas, beatBuffer, '#1db954');
+
+  setMsg(`Beat loaded! Now <span>record your vocals</span> on each track below.`);
+}
+
+function removeBeat() {
+  beatBuffer = null;
+  if (beatSource) { try { beatSource.stop(); } catch(e){} beatSource = null; }
+  beatPlaying = false;
+  document.getElementById('beat-zone').style.display = 'flex';
+  document.getElementById('beat-canvas').style.display = 'none';
+  document.getElementById('beat-controls').style.display = 'none';
+  document.getElementById('beat-zone').classList.remove('has-beat');
+  document.getElementById('beat-title').textContent = 'Upload your beat';
+  document.getElementById('beat-sub').textContent = 'Tap to browse — MP3 or WAV';
+  document.getElementById('beat-play-btn').textContent = '▶';
+  document.getElementById('beat-file-input').value = '';
+  setMsg(`Upload a beat then <span>record your vocals</span> on top.`);
+}
+
+function playBeat() {
+  if (!beatBuffer) return;
+  const ctx = getAudioCtx();
+  if (beatPlaying) {
+    try { beatSource.stop(); } catch(e){}
+    beatPlaying = false;
+    document.getElementById('beat-play-btn').textContent = '▶';
+    document.getElementById('beat-play-btn').classList.remove('active');
+    return;
+  }
+  beatSource = ctx.createBufferSource();
+  beatSource.buffer = beatBuffer;
+  beatSource.connect(ctx.destination);
+  beatSource.start();
+  beatPlaying = true;
+  document.getElementById('beat-play-btn').textContent = '⏸';
+  document.getElementById('beat-play-btn').classList.add('active');
+  beatSource.onended = () => {
+    beatPlaying = false;
+    document.getElementById('beat-play-btn').textContent = '▶';
+    document.getElementById('beat-play-btn').classList.remove('active');
+  };
+}
+
+// =====================
+// PLAY ALL
+// =====================
+function playAll() {
+  if (!beatBuffer && !tracks.some(t => t.buffer)) return;
+  const ctx = getAudioCtx();
+  stopAll();
+  if (beatBuffer) {
+    beatSource = ctx.createBufferSource();
+    beatSource.buffer = beatBuffer;
+    beatSource.connect(ctx.destination);
+    beatSource.start();
+    beatPlaying = true;
+    document.getElementById('beat-play-btn').textContent = '⏸';
+    document.getElementById('beat-play-btn').classList.add('active');
+  }
+  tracks.filter(t => t.buffer).forEach(t => {
+    const s = ctx.createBufferSource();
+    s.buffer = t.buffer;
+    s.connect(ctx.destination);
+    s.start();
+  });
+  document.getElementById('transport-status').textContent = 'Playing';
+  document.getElementById('play-all-btn').textContent = '⏸';
+}
+
+function stopAll() {
+  if (beatSource) { try { beatSource.stop(); } catch(e){} beatSource = null; beatPlaying = false; }
+  document.getElementById('beat-play-btn').textContent = '▶';
+  document.getElementById('beat-play-btn').classList.remove('active');
+  document.getElementById('transport-status').textContent = 'Stopped';
+  document.getElementById('play-all-btn').textContent = '▶';
+}
+
+// =====================
+// TRACK MANAGEMENT
+// =====================
+function addTrack() {
+  const id = ++trackCounter;
+  const color = TRACK_COLORS[(id - 1) % TRACK_COLORS.length];
+  const track = { id, color, buffer: null, chunks: [], mediaRecorder: null, isRecording: false, stream: null, analyserNode: null, animFrame: null, timerInterval: null, seconds: 0, analysis: null };
+  tracks.push(track);
+  renderTrack(track);
+  checkReady();
+}
+
+function renderTrack(track) {
+  const container = document.getElementById('tracks-container');
+  const addBtn = document.getElementById('add-track-btn');
+
+  const div = document.createElement('div');
+  div.className = 'track-card';
+  div.id = `track-${track.id}`;
+  div.innerHTML = `
+    <div class="track-top">
+      <div class="track-color-bar" style="background:${track.color}"></div>
+      <div class="track-label">
+        <div class="track-name">Vocal ${track.id}</div>
+        <div class="track-role" id="role-${track.id}">Empty — record or upload</div>
+      </div>
+      <div class="track-actions">
+        <div class="level-meter" id="meter-${track.id}">
+          ${Array(8).fill('<div class="level-bar"></div>').join('')}
+        </div>
+        <button class="btn btn-rec" id="rec-btn-${track.id}" onclick="toggleRecord(${track.id})">⏺</button>
+        <button class="btn btn-sm-play" id="play-btn-${track.id}" onclick="playTrack(${track.id})" style="display:none">▶</button>
+        <button class="btn btn-sm-del" onclick="deleteTrack(${track.id})">✕</button>
+      </div>
+    </div>
+    <div class="track-upload-row" id="upload-row-${track.id}">
+      <button class="btn-upload-vocal" onclick="uploadVocal(${track.id})">📁 Upload vocal</button>
+    </div>
+    <div class="track-waveform" id="waveform-${track.id}">
+      <canvas id="canvas-${track.id}" height="40"></canvas>
+    </div>
+    <div class="vocal-badges" id="badges-${track.id}"></div>
+  `;
+
+  if (addBtn) {
+    container.insertBefore(div, addBtn);
+  } else {
+    container.appendChild(div);
+  }
+}
+
+function renderAddBtn() {
+  const container = document.getElementById('tracks-container');
+  const existing = document.getElementById('add-track-btn');
+  if (existing) existing.remove();
+  const btn = document.createElement('button');
+  btn.className = 'btn add-track-btn';
+  btn.id = 'add-track-btn';
+  btn.innerHTML = '＋ Add Vocal Track';
+  btn.onclick = addTrack;
+  container.appendChild(btn);
+}
+
+function deleteTrack(id) {
+  const track = tracks.find(t => t.id === id);
+  if (track?.isRecording) stopRecording(id);
+  if (track?.stream) track.stream.getTracks().forEach(t => t.stop());
+  tracks = tracks.filter(t => t.id !== id);
+  document.getElementById(`track-${id}`)?.remove();
+  checkReady();
+}
+
+// =====================
+// UPLOAD VOCAL TO TRACK
+// =====================
+function uploadVocal(id) {
+  const input = document.getElementById('track-file-input');
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const ctx = getAudioCtx();
+    const ab = await file.arrayBuffer();
+    const buffer = await ctx.decodeAudioData(ab);
+    const track = tracks.find(t => t.id === id);
+    track.buffer = buffer;
+    track.analysis = analyzeVocal(track);
+    showTrackAudio(id);
+    input.value = '';
+  };
+  input.click();
+}
+
+// =====================
+// RECORDING
+// =====================
+async function toggleRecord(id) {
+  const track = tracks.find(t => t.id === id);
+  if (!track) return;
+  if (track.isRecording) { stopRecording(id); return; }
+  await startRecording(id);
+}
+
+async function startRecording(id) {
+  const track = tracks.find(t => t.id === id);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 } });
+    track.stream = stream;
+    track.chunks = [];
+    track.isRecording = true;
+    track.seconds = 0;
+    activeRecordingId = id;
+
+    const ctx = getAudioCtx();
+    const source = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 64;
+    source.connect(analyser);
+    track.analyserNode = analyser;
+    animateMeter(track);
+
+    track.mediaRecorder = new MediaRecorder(stream, { mimeType: getSupportedMimeType() });
+    track.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) track.chunks.push(e.data); };
+    track.mediaRecorder.onstop = () => finishRecording(id);
+    track.mediaRecorder.start(100);
+
+    // UI
+    document.getElementById(`track-${id}`).classList.add('recording');
+    const btn = document.getElementById(`rec-btn-${id}`);
+    btn.innerHTML = '⏹';
+    btn.classList.add('active');
+    document.getElementById(`role-${id}`).textContent = 'Recording...';
+    document.getElementById('global-rec').style.display = 'flex';
+
+    // Play beat alongside if loaded
+    if (beatBuffer && !beatPlaying) playBeat();
+
+    // Timer
+    track.timerInterval = setInterval(() => {
+      track.seconds++;
+      const m = Math.floor(track.seconds / 60);
+      const s = track.seconds % 60;
+      document.getElementById(`role-${id}`).textContent = `Recording ${m}:${s.toString().padStart(2,'0')}`;
+    }, 1000);
+
+    setMsg(`🔴 Recording Vocal ${id}... Sing your heart out!`);
+
+  } catch(e) {
+    alert('Microphone access needed to record. Please allow it in your browser settings.');
+  }
+}
+
+function stopRecording(id) {
+  const track = tracks.find(t => t.id === id);
+  if (!track?.mediaRecorder) return;
+  track.mediaRecorder.stop();
+  track.isRecording = false;
+  activeRecordingId = null;
+  clearInterval(track.timerInterval);
+  cancelAnimationFrame(track.animFrame);
+  if (track.stream) { track.stream.getTracks().forEach(t => t.stop()); track.stream = null; }
+  document.getElementById(`rec-btn-${id}`).innerHTML = '⏺';
+  document.getElementById(`rec-btn-${id}`).classList.remove('active');
+  document.getElementById(`track-${id}`).classList.remove('recording');
+  document.getElementById('global-rec').style.display = 'none';
+  resetMeter(id);
+  if (beatPlaying) { try { beatSource.stop(); } catch(e){} beatPlaying = false; document.getElementById('beat-play-btn').textContent = '▶'; document.getElementById('beat-play-btn').classList.remove('active'); }
+}
+
+async function finishRecording(id) {
+  const track = tracks.find(t => t.id === id);
+  const mimeType = getSupportedMimeType();
+  const blob = new Blob(track.chunks, { type: mimeType });
+  const ab = await blob.arrayBuffer();
+  const ctx = getAudioCtx();
+  try {
+    track.buffer = await ctx.decodeAudioData(ab);
+    track.analysis = analyzeVocal(track);
+    showTrackAudio(id);
+    checkReady();
+  } catch(e) {
+    console.error('Decode error:', e);
+    document.getElementById(`role-${id}`).textContent = 'Error — try again';
+  }
+}
+
+function getSupportedMimeType() {
+  const types = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
+  for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+  return '';
+}
+
+function showTrackAudio(id) {
+  const track = tracks.find(t => t.id === id);
+  const buf = track.buffer;
+  document.getElementById(`track-${id}`).classList.add('has-audio');
+  document.getElementById(`play-btn-${id}`).style.display = 'flex';
+  document.getElementById(`rec-btn-${id}`).innerHTML = '⏺';
+  document.getElementById(`upload-row-${id}`).style.display = 'none';
+
+  // Draw waveform
+  const waveDiv = document.getElementById(`waveform-${id}`);
+  waveDiv.style.display = 'block';
+  const canvas = document.getElementById(`canvas-${id}`);
+  canvas.width = canvas.parentElement.offsetWidth - 28;
+  drawWaveformOnCanvas(canvas, buf, track.color);
+
+  // Show badges
+  const a = track.analysis;
+  if (a) {
+    document.getElementById(`role-${id}`).textContent = `${a.role} • ${buf.duration.toFixed(1)}s`;
+    const badges = document.getElementById(`badges-${id}`);
+    badges.style.display = 'flex';
+    badges.innerHTML = `
+      <span class="vbadge vb-green">🎤 ${a.role}</span>
+      <span class="vbadge vb-blue">🎵 ${a.tone}</span>
+      <span class="vbadge vb-yellow">⚡ ${a.energy}</span>
+      <span class="vbadge vb-red">◈ ${a.pan}</span>
+    `;
+  }
+  checkReady();
+}
+
+// =====================
+// VOCAL ANALYSIS
+// =====================
+function analyzeVocal(track) {
+  const data = track.buffer.getChannelData(0);
+  let sumSq = 0, peak = 0, crossings = 0;
+  for (let i = 0; i < data.length; i++) {
+    sumSq += data[i] * data[i];
+    peak = Math.max(peak, Math.abs(data[i]));
+    if (i > 0 && ((data[i] >= 0) !== (data[i-1] >= 0))) crossings++;
+  }
+  const rms = Math.sqrt(sumSq / data.length);
+  const zcr = crossings / data.length;
+  const energy = rms > 0.08 ? 'High Energy' : rms > 0.03 ? 'Mid Energy' : 'Soft';
+  const tone = zcr > 0.12 ? 'Bright' : zcr > 0.07 ? 'Mid-Range' : 'Deep';
+  const recorded = tracks.filter(t => t.buffer).length;
+  let role, pan;
+  if (recorded <= 1) { role = 'Lead'; pan = 'Center'; }
+  else if (recorded === 2) { role = 'Harmony'; pan = Math.random() > 0.5 ? 'Left' : 'Right'; }
+  else { const r = ['Backing','Ad-lib','Harmony','Double']; role = r[(recorded-1)%r.length]; const p = ['Wide Left','Wide Right','Left','Right']; pan = p[(recorded-1)%p.length]; }
+  return { rms, peak, zcr, energy, tone, role, pan };
+}
+
+// =====================
+// PLAY TRACK
+// =====================
+function playTrack(id) {
+  const track = tracks.find(t => t.id === id);
+  if (!track?.buffer) return;
+  const ctx = getAudioCtx();
+  const s = ctx.createBufferSource();
+  s.buffer = track.buffer;
+  s.connect(ctx.destination);
+  s.start();
+}
+
+// =====================
+// LEVEL METER
+// =====================
+function animateMeter(track) {
+  const meter = document.getElementById(`meter-${track.id}`);
+  const bars = meter.querySelectorAll('.level-bar');
+  const analyser = track.analyserNode;
+  if (!analyser) return;
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  function draw() {
+    analyser.getByteFrequencyData(data);
+    const avg = data.reduce((a,b) => a+b, 0) / data.length / 255;
+    bars.forEach((bar, i) => {
+      const thresh = i / bars.length;
+      const active = avg > thresh;
+      bar.style.height = active ? Math.max(2, avg * 18 * (1 - thresh * 0.4)) + 'px' : '2px';
+      bar.style.background = active ? (avg > 0.7 ? '#ff4444' : avg > 0.4 ? '#ffb800' : '#1db954') : 'var(--border)';
+    });
+    track.animFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function resetMeter(id) {
+  const meter = document.getElementById(`meter-${id}`);
+  if (!meter) return;
+  meter.querySelectorAll('.level-bar').forEach(b => { b.style.height = '2px'; b.style.background = 'var(--border)'; });
+}
+
+// =====================
+// DRAW WAVEFORM
+// =====================
+function drawWaveformOnCanvas(canvas, buffer, color) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width || canvas.offsetWidth;
+  const H = canvas.height || 40;
+  canvas.width = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+  const data = buffer.getChannelData(0);
+  const step = Math.ceil(data.length / W);
+  const amp = H / 2;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x = 0; x < W; x++) {
+    let min = 1, max = -1;
+    for (let j = 0; j < step; j++) {
+      const v = data[x * step + j] || 0;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    ctx.moveTo(x, amp + min * amp * 0.85);
+    ctx.lineTo(x, amp + max * amp * 0.85);
+  }
+  ctx.stroke();
+}
+
+// =====================
+// AUTOMIX
+// =====================
+async function openMixModal() {
+  document.getElementById('mix-modal').classList.add('open');
+  document.getElementById('mix-result').style.display = 'none';
+  const steps = document.querySelectorAll('.mix-step');
+  steps.forEach(s => s.classList.remove('active','done'));
+  document.getElementById('automix-btn').classList.add('mixing');
+
+  const durations = [700,600,800,700,900,600,900];
+  for (let i = 0; i < 7; i++) {
+    if (i > 0) document.getElementById(`mstep-${i}`).classList.replace('active','done');
+    document.getElementById(`mstep-${i+1}`).classList.add('active');
+    await sleep(durations[i]);
+  }
+  document.getElementById('mstep-7').classList.replace('active','done');
+
+  // Mix
+  const readyTracks = tracks.filter(t => t.buffer);
+  try {
+    finalMixBuffer = await performMix(readyTracks);
+    document.getElementById('stat-tracks').textContent = readyTracks.length + (beatBuffer ? '+beat' : '');
+    document.getElementById('stat-dur').textContent = finalMixBuffer.duration.toFixed(1) + 's';
+    document.getElementById('mix-result').style.display = 'block';
+    setMsg(`🎶 <span>Mix done!</span> Play it back or download your track.`);
+  } catch(e) {
+    console.error(e);
+    closeMixModal();
+    setMsg(`Something went wrong. Try recording again.`);
+  }
+  document.getElementById('automix-btn').classList.remove('mixing');
+}
+
+function closeMixModal() {
+  document.getElementById('mix-modal').classList.remove('open');
+}
+
+async function performMix(readyTracks) {
+  const ctx = getAudioCtx();
+  const allBuffers = [...(beatBuffer ? [{ buffer: beatBuffer, isBeat: true }] : []), ...readyTracks.map(t => ({ buffer: t.buffer, track: t, isBeat: false }))];
+  const maxDur = Math.max(...allBuffers.map(b => b.buffer.duration));
+  const sr = ctx.sampleRate;
+  const totalSamples = Math.ceil(maxDur * sr) + Math.ceil(1.5 * sr);
+  const outBuf = ctx.createBuffer(2, totalSamples, sr);
+  const L = outBuf.getChannelData(0);
+  const R = outBuf.getChannelData(1);
+
+  for (const item of allBuffers) {
+    const buf = item.buffer;
+    const data = buf.numberOfChannels > 1 ? buf.getChannelData(0) : buf.getChannelData(0);
+    const dataR = buf.numberOfChannels > 1 ? buf.getChannelData(1) : buf.getChannelData(0);
+    const len = buf.length;
+
+    let pan = 0.5, vol = 1.0;
+    if (item.isBeat) { pan = 0.5; vol = 0.75; }
+    else {
+      const a = item.track.analysis || {};
+      if (a.pan === 'Left' || a.pan === 'Wide Left') pan = 0.2;
+      else if (a.pan === 'Right' || a.pan === 'Wide Right') pan = 0.8;
+      else pan = 0.5;
+      if (a.role === 'Lead') vol = 1.0;
+      else if (a.role === 'Harmony') vol = 0.7;
+      else if (a.role === 'Backing') vol = 0.6;
+      else vol = 0.55;
+
+      // Normalize
+      const tRMS = 0.065;
+      const cRMS = a.rms || 0.05;
+      vol *= Math.min(tRMS / Math.max(cRMS, 0.001), 2.5);
+    }
+
+    const lGain = Math.cos(pan * Math.PI / 2) * vol;
+    const rGain = Math.sin(pan * Math.PI / 2) * vol;
+
+    // Simple reverb
+    const revTime = item.isBeat ? 0.3 : 0.9;
+    const revLen = Math.min(Math.floor(revTime * sr), 8192);
+    const ir = new Float32Array(revLen);
+    for (let i = 0; i < revLen; i++) ir[i] = (Math.random()*2-1) * Math.exp(-i/(revLen*0.4));
+
+    const wetAmt = item.isBeat ? 0.05 : 0.2;
+    const dryAmt = 1 - wetAmt * 0.4;
+
+    // Compress
+    function compress(s) {
+      const thr = 0.45, ratio = 3.5;
+      const abs = Math.abs(s);
+      if (abs > thr) { const ov = abs - thr; const c = thr + ov/ratio; return s > 0 ? c : -c; }
+      return s;
+    }
+
+    // HP filter
+    let prev = 0, prevIn = 0;
+    const hpA = 1 - Math.exp(-2 * Math.PI * 80 / sr);
+
+    for (let i = 0; i < len && i < totalSamples; i++) {
+      let sl = data[i] || 0;
+      let sr2 = dataR[i] || 0;
+      // HP
+      const hpL = sl - prevIn + (1 - hpA) * prev; prev = hpL; prevIn = sl; sl = hpL;
+      // Compress
+      sl = compress(sl); sr2 = compress(sr2);
+      // Reverb
+      let revL = 0;
+      for (let j = 0; j < Math.min(revLen, i); j++) revL += (L[i-j]||0) * ir[j];
+      L[i] += sl * lGain * dryAmt + revL * wetAmt;
+      R[i] += sr2 * rGain * dryAmt + revL * wetAmt;
+    }
+  }
+
+  // Master limiter
+  let peak = 0;
+  for (let i = 0; i < totalSamples; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
+  const g = peak > 0.92 ? 0.92 / peak : 1;
+  for (let i = 0; i < totalSamples; i++) { L[i] *= g; R[i] *= g; }
+  return outBuf;
+}
+
+// =====================
+// PLAY / DOWNLOAD MIX
+// =====================
+function playFinalMix() {
+  if (!finalMixBuffer) return;
+  const ctx = getAudioCtx();
+  if (mixPlaying && finalMixSource) {
+    try { finalMixSource.stop(); } catch(e){}
+    mixPlaying = false;
+    document.getElementById('play-result-btn').textContent = '▶ Play';
+    return;
+  }
+  finalMixSource = ctx.createBufferSource();
+  finalMixSource.buffer = finalMixBuffer;
+  finalMixSource.connect(ctx.destination);
+  finalMixSource.start();
+  mixPlaying = true;
+  document.getElementById('play-result-btn').textContent = '⏹ Stop';
+  finalMixSource.onended = () => { mixPlaying = false; document.getElementById('play-result-btn').textContent = '▶ Play'; };
+}
+
+function downloadMix() {
+  if (!finalMixBuffer) return;
+  const wav = bufferToWav(finalMixBuffer);
+  const url = URL.createObjectURL(wav);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'voxstudio-mix.wav'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function bufferToWav(buffer) {
+  const nc = buffer.numberOfChannels, sr = buffer.sampleRate, len = buffer.length;
+  const ab = new ArrayBuffer(44 + len * nc * 2);
+  const v = new DataView(ab);
+  const ws = (o,s) => { for (let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  ws(0,'RIFF'); v.setUint32(4,36+len*nc*2,true); ws(8,'WAVE');
+  ws(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,nc,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*nc*2,true); v.setUint16(32,nc*2,true); v.setUint16(34,16,true);
+  ws(36,'data'); v.setUint32(40,len*nc*2,true);
+  let offset = 44;
+  for (let i=0;i<len;i++) for (let c=0;c<nc;c++) {
+    const s = Math.max(-1,Math.min(1,buffer.getChannelData(c)[i]));
+    v.setInt16(offset, s<0?s*32768:s*32767, true); offset+=2;
+  }
+  return new Blob([ab],{type:'audio/wav'});
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Close modal on overlay click
+document.getElementById('mix-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeMixModal();
+});
+
+// Init
+renderAddBtn();
+addTrack();
+</script>
+</body>
+</html>
