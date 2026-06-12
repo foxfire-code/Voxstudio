@@ -2,1125 +2,1614 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>VoxStudio Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#06090e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Vox Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg-dark: #06090e;
-  --bg-surface: #0c111a;
-  --bg-card: #131a26;
-  --bg-input: #1b2436;
-  --border: #24324a;
-  --accent: #ff453a; 
-  --accent-gradient: linear-gradient(135deg, #ff453a, #ff763b);
-  --neon-blue: #00f0ff;
-  --neon-green: #22c55e;
-  --text-main: #f8fafc;
-  --text-muted: #64748b;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
+  :root {
+    --bg: #06090e;
+    --surface: #0c111a;
+    --card: #131a26;
+    --card2: #1a2235;
+    --red: #ff453a;
+    --red2: #ff763b;
+    --cyan: #00f0ff;
+    --cyan-dim: rgba(0,240,255,0.12);
+    --cyan-glow: rgba(0,240,255,0.35);
+    --red-glow: rgba(255,69,58,0.4);
+    --text: #f0f4ff;
+    --text-dim: #7a8ba8;
+    --text-mid: #a8b8d0;
+    --border: rgba(255,255,255,0.07);
+    --border-cyan: rgba(0,240,255,0.2);
+    --nav-h: 72px;
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+    --font-brand: 'Space Grotesk', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:var(--font-main); color:var(--text); }
 
-* { 
-  margin: 0; padding: 0; box-sizing: border-box; 
-  -webkit-tap-highlight-color: transparent; 
-  font-family: 'Plus Jakarta Sans', sans-serif; 
-  user-select: none;
-}
-html, body { 
-  height: 100%; background: var(--bg-dark); 
-  color: var(--text-main); overflow: hidden; 
-  position: relative; width: 100%;
-}
+  /* ── SPLASH ── */
+  #splash {
+    position:fixed; inset:0; background:var(--bg); z-index:999;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:24px; padding:40px 32px;
+  }
+  .splash-logo { font-family:var(--font-brand); font-size:42px; font-weight:700; letter-spacing:-1px;
+    background:linear-gradient(135deg,var(--cyan),#007aff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .splash-sub { color:var(--text-dim); font-size:14px; text-align:center; line-height:1.6; }
+  .splash-input-wrap { width:100%; max-width:320px; position:relative; }
+  .splash-input {
+    width:100%; padding:16px 20px; background:var(--card); border:1.5px solid var(--border-cyan);
+    border-radius:16px; color:var(--text); font-size:16px; font-family:var(--font-main);
+    outline:none; transition:border-color .2s, box-shadow .2s;
+  }
+  .splash-input::placeholder { color:var(--text-dim); }
+  .splash-input:focus { border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-dim); }
+  .splash-btn {
+    width:100%; max-width:320px; padding:17px; border:none; border-radius:16px; cursor:pointer;
+    background:linear-gradient(135deg,var(--cyan),#007aff); color:#000; font-size:16px;
+    font-weight:700; font-family:var(--font-main); letter-spacing:.3px;
+    transition:opacity .15s, transform .1s; active:scale(.97);
+  }
+  .splash-btn:active { transform:scale(.97); opacity:.9; }
+  .splash-waveform { display:flex; align-items:flex-end; gap:3px; height:36px; margin-bottom:8px; }
+  .splash-bar { width:4px; border-radius:2px; background:linear-gradient(180deg,var(--cyan),#007aff); animation:splashPulse 1.2s ease-in-out infinite; }
+  .splash-bar:nth-child(2){animation-delay:.1s;height:60%}
+  .splash-bar:nth-child(3){animation-delay:.2s;height:90%}
+  .splash-bar:nth-child(4){animation-delay:.3s;height:50%}
+  .splash-bar:nth-child(5){animation-delay:.4s;height:100%}
+  .splash-bar:nth-child(6){animation-delay:.5s;height:70%}
+  .splash-bar:nth-child(7){animation-delay:.6s;height:40%}
+  .splash-bar:nth-child(8){animation-delay:.7s;height:80%}
+  @keyframes splashPulse { 0%,100%{transform:scaleY(1);opacity:.7} 50%{transform:scaleY(1.4);opacity:1} }
 
-/* APP CONTAINMENT & TRANSITIONS */
-.app-screen {
-  position: absolute; inset: 0; width: 100%; height: 100%; 
-  display: none; flex-direction: column; background: var(--bg-dark);
-  padding-bottom: calc(80px + var(--safe-bottom));
-}
-.app-screen.active { display: flex; animation: appScreenFade 0.2s ease-out forwards; }
-@keyframes appScreenFade { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+  /* ── APP SHELL ── */
+  #app { position:fixed; inset:0; display:none; flex-direction:column; }
+  #app.visible { display:flex; }
+  .screens { flex:1; overflow:hidden; position:relative; }
+  .screen { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+    padding-bottom:calc(var(--nav-h) + 16px); opacity:0; pointer-events:none;
+    transform:translateY(8px); transition:opacity .25s, transform .25s; }
+  .screen.active { opacity:1; pointer-events:all; transform:translateY(0); }
+  .screen::-webkit-scrollbar { display:none; }
 
-/* APP BAR HEADER */
-.screen-header {
-  height: 68px; border-bottom: 1px solid var(--border); 
-  display: flex; align-items: center; padding: 0 20px; 
-  justify-content: space-between; background: var(--bg-surface);
-}
-.screen-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; }
-.header-action-icon { background: none; border: none; color: var(--text-main); font-size: 1.3rem; cursor: pointer; }
+  /* ── BOTTOM NAV ── */
+  #nav {
+    position:fixed; bottom:0; left:0; right:0; height:var(--nav-h);
+    background:rgba(12,17,26,0.95); backdrop-filter:blur(20px);
+    border-top:1px solid var(--border); display:flex; align-items:center;
+    justify-content:space-around; padding:0 8px; z-index:100;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .nav-btn { display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:10px 20px; border:none; background:none; cursor:pointer;
+    color:var(--text-dim); font-size:10px; font-family:var(--font-main); font-weight:600;
+    transition:color .2s; text-transform:uppercase; letter-spacing:.6px; }
+  .nav-btn.active { color:var(--cyan); }
+  .nav-btn svg { width:22px; height:22px; }
+  .nav-fab {
+    width:58px; height:58px; border-radius:50%; border:none; cursor:pointer;
+    background:linear-gradient(135deg,var(--cyan),#007aff);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 24px var(--cyan-glow), 0 4px 20px rgba(0,122,255,0.4);
+    margin-bottom:16px; transition:transform .15s, box-shadow .15s;
+    font-size:26px; color:#000; font-weight:300;
+  }
+  .nav-fab:active { transform:scale(.93); box-shadow:0 0 12px var(--cyan-glow); }
 
-.screen-body-scroll { flex: 1; overflow-y: auto; padding: 20px; }
-.screen-body-scroll::-webkit-scrollbar { display: none; }
+  /* ── COMMON ── */
+  .page-header { padding:20px 20px 12px; display:flex; align-items:center; justify-content:space-between; }
+  .page-title { font-family:var(--font-brand); font-size:24px; font-weight:700; }
+  .page-title span { background:linear-gradient(90deg,var(--cyan),#007aff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .section-label { font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:18px; }
+  .pill-btn {
+    padding:10px 18px; border-radius:50px; border:1.5px solid var(--border-cyan);
+    background:transparent; color:var(--cyan); font-size:12px; font-weight:600;
+    font-family:var(--font-main); cursor:pointer; transition:background .15s, transform .1s;
+    white-space:nowrap;
+  }
+  .pill-btn:active { transform:scale(.95); background:var(--cyan-dim); }
+  .pill-btn.active { background:var(--cyan); color:#000; border-color:var(--cyan); }
 
-/* 🌟 YOUTUBE INSPIRATION FEED CAROUSEL */
-.youtube-section-wrapper { margin-bottom: 28px; }
-.section-title-strip { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.section-title-strip h3 { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-main); }
-.btn-refresh-feed { background: none; border: none; color: var(--neon-blue); font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+  /* ── HOME SCREEN ── */
+  #screen-home { background:var(--bg); }
+  .home-greeting { padding:0 20px 16px; }
+  .home-greeting .name { font-family:var(--font-brand); font-size:28px; font-weight:700; }
+  .home-greeting .sub { color:var(--text-dim); font-size:13px; margin-top:3px; }
+  .yt-section { padding:0 20px 24px; }
+  .yt-scroll { display:flex; gap:12px; overflow-x:auto; padding-bottom:4px; }
+  .yt-scroll::-webkit-scrollbar { display:none; }
+  .yt-card { flex:0 0 260px; border-radius:16px; overflow:hidden; background:var(--card); border:1px solid var(--border); }
+  .yt-frame { width:100%; height:146px; border:none; display:block; }
+  .yt-meta { padding:10px 12px; }
+  .yt-artist { font-size:12px; font-weight:700; color:var(--text); }
+  .yt-desc { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .feed-section { padding:0 20px; }
+  .feed-card { background:var(--card); border:1px solid var(--border); border-radius:18px;
+    padding:14px 16px; margin-bottom:12px; display:flex; gap:12px; align-items:center; }
+  .feed-avatar { width:44px; height:44px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; }
+  .feed-info { flex:1; min-width:0; }
+  .feed-name { font-size:13px; font-weight:700; }
+  .feed-track { font-size:12px; color:var(--text-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .feed-play { width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--cyan-dim); border:1.5px solid var(--border-cyan);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .feed-play svg { width:14px; height:14px; fill:var(--cyan); }
+  .feed-tag { display:inline-block; padding:3px 8px; border-radius:20px; font-size:10px;
+    font-weight:600; margin-top:5px; }
 
-.youtube-carousel-container { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
-.youtube-carousel-container::-webkit-scrollbar { display: none; }
-.youtube-card-item { flex: 0 0 88%; width: 88%; scroll-snap-align: start; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-.video-iframe-embed-holder { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; background: #000; }
-.video-iframe-embed-holder iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-.video-meta-label { padding: 12px 16px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--bg-card); color: var(--text-main); }
+  /* ── STUDIO SCREEN ── */
+  #screen-studio { background:var(--bg); }
+  .studio-beat-bar {
+    margin:0 16px 12px; padding:14px 16px; background:var(--card); border:1px solid var(--border-cyan);
+    border-radius:16px; display:flex; align-items:center; gap:12px;
+  }
+  .beat-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,var(--cyan),#007aff);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .beat-icon svg { width:18px; height:18px; fill:#000; }
+  .beat-info { flex:1; min-width:0; }
+  .beat-name { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .beat-bpm { font-size:11px; color:var(--cyan); font-weight:600; margin-top:1px; }
+  .beat-play-btn {
+    width:38px; height:38px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--cyan); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:transform .1s, box-shadow .15s;
+  }
+  .beat-play-btn:active { transform:scale(.92); }
+  .beat-play-btn.playing { background:linear-gradient(135deg,var(--red),var(--red2)); box-shadow:0 0 16px var(--red-glow); }
+  .beat-play-btn svg { width:14px; height:14px; fill:#000; }
+  .studio-controls { margin:0 16px 12px; display:flex; gap:8px; flex-wrap:wrap; }
+  .ctrl-toggle {
+    flex:1; min-width:0; padding:11px 8px; border-radius:14px; border:1.5px solid var(--border);
+    background:var(--card); color:var(--text-dim); font-size:11px; font-weight:700;
+    font-family:var(--font-main); cursor:pointer; text-align:center; transition:all .2s;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .ctrl-toggle.on-cyan { border-color:var(--cyan); background:var(--cyan-dim); color:var(--cyan); }
+  .ctrl-toggle.on-red { border-color:var(--red); background:rgba(255,69,58,.12); color:var(--red); }
+  .upload-beat-btn {
+    flex:1; padding:11px 8px; border-radius:14px; border:1.5px dashed var(--border-cyan);
+    background:transparent; color:var(--cyan); font-size:11px; font-weight:700;
+    font-family:var(--font-main); cursor:pointer; white-space:nowrap; transition:background .15s;
+  }
+  .upload-beat-btn:active { background:var(--cyan-dim); }
+  #upload-beat-input { display:none; }
+  .transport {
+    margin:0 16px 12px; padding:16px; background:var(--card); border:1px solid var(--border);
+    border-radius:20px; display:flex; flex-direction:column; align-items:center; gap:14px;
+  }
+  .timer { font-family:var(--font-brand); font-size:32px; font-weight:700; letter-spacing:2px;
+    color:var(--cyan); text-shadow:0 0 20px var(--cyan-glow); }
+  .record-btn {
+    width:72px; height:72px; border-radius:50%; border:none; cursor:pointer;
+    background:linear-gradient(135deg,var(--red),var(--red2));
+    box-shadow:0 0 30px var(--red-glow), 0 4px 20px rgba(255,69,58,.3);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .12s, box-shadow .15s;
+    font-size:28px;
+  }
+  .record-btn:active { transform:scale(.92); }
+  .record-btn.recording { animation:recordPulse 1.2s ease-in-out infinite; }
+  @keyframes recordPulse {
+    0%,100%{box-shadow:0 0 30px var(--red-glow), 0 4px 20px rgba(255,69,58,.3)}
+    50%{box-shadow:0 0 50px rgba(255,69,58,.8), 0 4px 30px rgba(255,69,58,.5)}
+  }
+  .lanes-section { margin:0 16px 12px; }
+  .lanes-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .add-lane-btn {
+    width:30px; height:30px; border-radius:50%; border:1.5px solid var(--border-cyan);
+    background:var(--cyan-dim); color:var(--cyan); font-size:18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:transform .1s;
+  }
+  .add-lane-btn:active { transform:scale(.9); }
+  .lane {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:10px;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .lane.armed { border-color:var(--red); box-shadow:0 0 12px rgba(255,69,58,.2); }
+  .lane.has-audio { border-color:var(--cyan); box-shadow:0 0 12px var(--cyan-dim); }
+  .lane-num { width:24px; height:24px; border-radius:50%; background:var(--card2);
+    display:flex; align-items:center; justify-content:center; font-size:11px;
+    font-weight:700; color:var(--text-dim); flex-shrink:0; }
+  .lane-label { flex:1; font-size:12px; font-weight:600; color:var(--text-mid); }
+  .lane-vol { flex:2; height:4px; -webkit-appearance:none; appearance:none; background:var(--card2);
+    border-radius:4px; outline:none; cursor:pointer; }
+  .lane-vol::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px;
+    border-radius:50%; background:var(--cyan); cursor:pointer; }
+  .lane-mute {
+    padding:5px 10px; border-radius:8px; border:1px solid var(--border);
+    background:transparent; color:var(--text-dim); font-size:10px; font-weight:700;
+    cursor:pointer; flex-shrink:0; transition:all .15s;
+  }
+  .lane-mute.muted { border-color:var(--red); color:var(--red); background:rgba(255,69,58,.1); }
+  .lane-del { width:28px; height:28px; border-radius:8px; border:none; background:rgba(255,69,58,.1);
+    color:var(--red); font-size:14px; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; flex-shrink:0; }
+  .fx-section { margin:0 16px 12px; }
+  .fx-key-row { display:flex; gap:8px; margin-bottom:10px; overflow-x:auto; padding-bottom:4px; }
+  .fx-key-row::-webkit-scrollbar { display:none; }
+  .fx-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .fx-card {
+    background:var(--card); border:1.5px solid var(--border); border-radius:16px;
+    padding:14px 12px; cursor:pointer; transition:all .2s; text-align:left;
+  }
+  .fx-card.active { border-color:var(--cyan); background:var(--cyan-dim); }
+  .fx-card-icon { font-size:20px; margin-bottom:6px; }
+  .fx-card-name { font-size:12px; font-weight:700; color:var(--text); }
+  .fx-card-desc { font-size:10px; color:var(--text-dim); margin-top:2px; }
+  .master-row { margin:0 16px 12px; display:flex; gap:8px; }
+  .master-btn {
+    flex:1; padding:15px; border-radius:16px; border:none; cursor:pointer;
+    font-size:14px; font-weight:700; font-family:var(--font-main);
+    transition:transform .1s, box-shadow .15s;
+  }
+  .master-btn:active { transform:scale(.97); }
+  .master-mix { background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff;
+    box-shadow:0 4px 20px rgba(124,58,237,.3); }
+  .master-clip { background:linear-gradient(135deg,var(--red),var(--red2)); color:#fff;
+    box-shadow:0 4px 20px var(--red-glow); }
 
-/* GLOBAL COMMUNITY FEED */
-.community-feed-stack { display: flex; flex-direction: column; gap: 14px; }
-.community-post-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.post-header-node { display: flex; align-items: center; gap: 12px; }
-.post-avatar-circle { width: 40px; height: 40px; background: var(--accent-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #fff; }
-.post-user-meta-name { font-size: 0.9rem; font-weight: 700; }
-.post-user-meta-time { font-size: 0.7rem; color: var(--text-muted); }
-.post-audio-player-wrapper { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); border: 1px solid var(--border); padding: 12px 16px; border-radius: 14px; }
-.post-play-trigger-btn { background: var(--text-main); color: var(--bg-dark); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; font-weight: 700; }
+  /* ── INSTRUMENTALS ── */
+  #screen-instrumentals { background:var(--bg); padding:0; }
+  .beat-tile {
+    margin:0 16px 10px; background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:16px; display:flex; align-items:center; gap:14px;
+    cursor:pointer; transition:border-color .2s, box-shadow .2s;
+  }
+  .beat-tile:active { transform:scale(.99); }
+  .beat-tile.selected { border-color:var(--cyan); box-shadow:0 0 20px var(--cyan-dim); }
+  .beat-tile-vis { width:48px; height:48px; border-radius:14px; flex-shrink:0;
+    display:flex; align-items:flex-end; justify-content:center; gap:2px; padding:8px 6px;
+    overflow:hidden; }
+  .beat-tile-bar { width:4px; border-radius:2px; animation:tilePulse 1s ease-in-out infinite; }
+  @keyframes tilePulse { 0%,100%{opacity:.5;transform:scaleY(.7)} 50%{opacity:1;transform:scaleY(1)} }
+  .beat-tile-info { flex:1; }
+  .beat-tile-name { font-size:15px; font-weight:700; }
+  .beat-tile-bpm { font-size:12px; color:var(--text-dim); margin-top:3px; }
+  .beat-tile-tag { font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; margin-top:5px; display:inline-block; }
+  .beat-tile-load {
+    padding:10px 16px; border-radius:12px; border:1.5px solid var(--border-cyan);
+    background:transparent; color:var(--cyan); font-size:12px; font-weight:700;
+    font-family:var(--font-main); cursor:pointer; flex-shrink:0; transition:background .15s;
+  }
+  .beat-tile-load:active { background:var(--cyan-dim); }
+  .beat-tile-load.loaded { background:var(--cyan); color:#000; border-color:var(--cyan); }
 
-/* 🌟 REAL STUDIO WORKSPACE LAYER LANES */
-.studio-waveform-header-panel { height: 74px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 20px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.waveform-canvas-ribbon { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.3; }
-.playhead-timeline-tracker-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
-.waveform-status-text-node { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); z-index: 5; background: rgba(12,17,26,0.8); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); }
+  /* ── PROFILE ── */
+  #screen-profile { background:var(--bg); }
+  .profile-hero { margin:0 16px 20px; background:var(--card); border:1px solid var(--border);
+    border-radius:22px; padding:24px; text-align:center; }
+  .profile-avatar { width:80px; height:80px; border-radius:50%; margin:0 auto 14px;
+    display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:700;
+    border:3px solid var(--cyan); box-shadow:0 0 20px var(--cyan-glow); }
+  .profile-name { font-family:var(--font-brand); font-size:22px; font-weight:700; }
+  .profile-handle { color:var(--text-dim); font-size:13px; margin-top:4px; }
+  .profile-stats { display:flex; justify-content:center; gap:32px; margin-top:18px; padding-top:18px; border-top:1px solid var(--border); }
+  .stat-item { text-align:center; }
+  .stat-num { font-family:var(--font-brand); font-size:22px; font-weight:700; color:var(--cyan); }
+  .stat-label { font-size:11px; color:var(--text-dim); margin-top:2px; text-transform:uppercase; letter-spacing:.6px; }
+  .profile-section { margin:0 16px 16px; }
+  .recent-track { background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px; }
+  .rt-bar { width:3px; height:36px; border-radius:2px; flex-shrink:0; }
+  .rt-info { flex:1; }
+  .rt-name { font-size:13px; font-weight:700; }
+  .rt-meta { font-size:11px; color:var(--text-dim); margin-top:2px; }
 
-.vocal-lanes-vertical-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-.vocal-lane-row-strip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s, background 0.2s; }
-.vocal-lane-row-strip.armed { border-color: var(--accent); background: linear-gradient(to right, rgba(255,69,58,0.04), transparent); }
-.lane-top-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-.vocal-lane-left-details { display: flex; align-items: center; gap: 12px; }
-.vocal-lane-active-indicator { width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; }
-.vocal-lane-row-strip.armed .vocal-lane-active-indicator { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-.vocal-lane-title-string { font-size: 0.9rem; font-weight: 700; }
-.vocal-lane-status-subtext { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+  /* ── DRAWER ── */
+  #drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200;
+    opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(4px); }
+  #drawer-overlay.open { opacity:1; pointer-events:all; }
+  #drawer { position:fixed; bottom:0; left:0; right:0; background:var(--surface);
+    border-radius:28px 28px 0 0; z-index:201; padding:24px 20px 40px;
+    transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1);
+    border-top:1px solid var(--border); }
+  #drawer.open { transform:translateY(0); }
+  .drawer-handle { width:36px; height:4px; border-radius:2px; background:var(--border);
+    margin:0 auto 20px; }
+  .drawer-title { font-family:var(--font-brand); font-size:18px; font-weight:700; margin-bottom:20px; text-align:center; }
+  .drawer-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .drawer-item {
+    background:var(--card); border:1px solid var(--border); border-radius:18px;
+    padding:18px 14px; cursor:pointer; text-align:center; transition:border-color .2s, background .2s;
+  }
+  .drawer-item:active { background:var(--card2); }
+  .drawer-item-icon { font-size:26px; margin-bottom:8px; }
+  .drawer-item-name { font-size:13px; font-weight:700; }
+  .drawer-item-desc { font-size:11px; color:var(--text-dim); margin-top:3px; }
 
-/* TRACK SLIDERS & CONTROLS */
-.lane-mix-controls { display: flex; align-items: center; gap: 12px; width: 100%; background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02); }
-.lane-volume-slider { flex: 1; -webkit-appearance: none; height: 4px; background: var(--bg-input); border-radius: 2px; outline: none; }
-.lane-volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--text-main); cursor: pointer; }
-.vocal-lane-row-strip.armed .lane-volume-slider::-webkit-slider-thumb { background: var(--accent); }
+  /* ── TOAST ── */
+  #toast { position:fixed; top:24px; left:50%; transform:translateX(-50%) translateY(-80px);
+    background:var(--card2); border:1px solid var(--border-cyan); border-radius:14px;
+    padding:12px 20px; font-size:13px; font-weight:600; color:var(--text);
+    z-index:500; transition:transform .3s cubic-bezier(.32,.72,0,1); white-space:nowrap;
+    box-shadow:0 8px 32px rgba(0,0,0,.4); }
+  #toast.show { transform:translateX(-50%) translateY(0); }
 
-.vocal-lane-quick-actions { display: flex; align-items: center; gap: 8px; }
-.btn-lane-control-node { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
-.btn-lane-control-node.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { height:3px; background:var(--card2); border-radius:2px; overflow:hidden; margin-top:8px; }
+  .progress-bar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--cyan),#007aff); width:0%; transition:width .1s linear; }
 
-.btn-dynamic-add-layer-trigger { width: 100%; background: transparent; border: 1px dashed var(--border); border-radius: 16px; padding: 14px; font-size: 0.85rem; font-weight: 700; color: var(--neon-blue); cursor: pointer; text-align: center; margin-bottom: 24px; }
+  /* ── CANVAS CLIP MODAL ── */
+  #clip-modal { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:300;
+    display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+    padding:24px; }
+  #clip-modal.open { display:flex; }
+  #clip-canvas { border-radius:16px; border:1.5px solid var(--border-cyan); max-width:100%; }
+  .clip-controls { display:flex; gap:10px; }
+  .clip-btn { padding:12px 24px; border-radius:14px; border:none; cursor:pointer;
+    font-size:14px; font-weight:700; font-family:var(--font-main); }
+  .clip-save { background:linear-gradient(135deg,var(--red),var(--red2)); color:#fff; }
+  .clip-close { background:var(--card); color:var(--text); border:1px solid var(--border); }
 
-/* 🌟 DYNAMIC MIC RECORDING FLOATING COCKPIT DECK */
-.studio-recording-hardware-dock {
-  background: linear-gradient(to bottom, var(--bg-surface), var(--bg-dark));
-  border: 1px solid var(--border); border-radius: 24px; padding: 16px 20px;
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-}
-.record-dock-meta { display: flex; flex-direction: column; gap: 4px; }
-.record-dock-meta span { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 700; }
-.record-dock-timer { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--text-main); }
-.record-dock-action-cluster { display: flex; align-items: center; gap: 14px; }
-.btn-dock-record-trigger {
-  width: 54px; height: 54px; background: var(--accent-gradient); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; border: none; color: #fff;
-  font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 14px rgba(255, 69, 58, 0.4);
-}
-.btn-dock-record-trigger.recording { background: #fff; color: var(--accent); animation: pulseRecord 1.2s infinite; }
-
-/* VOLOCO FX PRESET PANEL */
-.voloco-effects-panel-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 16px; margin-bottom: 24px; }
-.voloco-grid-selector-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-.voloco-selector-dropdown-wrapper { display: flex; flex-direction: column; gap: 6px; }
-.voloco-selector-dropdown-wrapper label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.6px; }
-.voloco-select-tag { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; outline: none; width: 100%; }
-
-.presets-horizontal-carousel { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
-.presets-horizontal-carousel::-webkit-scrollbar { display: none; }
-.preset-vibe-pill-card { flex: 0 0 auto; background: var(--bg-input); border: 1px solid var(--border); padding: 10px 18px; border-radius: 24px; font-size: 0.8rem; font-weight: 700; cursor: pointer; color: var(--text-muted); }
-.preset-vibe-pill-card.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
-
-/* BEAT SELECTION BLUEPRINTS LIST */
-.instrumentals-list-stack { display: flex; flex-direction: column; gap: 12px; }
-.beat-row-card { background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-.beat-row-left-node { display: flex; align-items: center; gap: 14px; }
-.beat-row-icon-box { width: 46px; height: 46px; background: var(--bg-input); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid var(--border); }
-.beat-row-title-string { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
-.beat-row-sub-label { font-size: 0.7rem; color: var(--text-muted); display: flex; gap: 6px; }
-
-/* ARTIST ACCOUNT PROFILE LAYER */
-.artist-profile-shell { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 0; }
-.profile-avatar-giant { width: 88px; height: 88px; background: var(--accent-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(255, 69, 58, 0.2); }
-.profile-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: 100%; margin: 24px 0; }
-.profile-stat-card { background: var(--bg-card); border: 1px solid var(--border); padding: 14px; border-radius: 16px; }
-.profile-stat-card h4 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--neon-blue); }
-.profile-stat-card p { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 2px; }
-
-/* AUTH PORTAL WALL */
-.auth-center-shell { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px; max-width: 400px; margin: 0 auto; width: 100%; }
-.auth-brand-logo { text-align: center; margin-bottom: 32px; }
-.auth-brand-logo span { font-size: 3rem; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
-.auth-form-field { background: var(--bg-input); border: 1px solid var(--border); border-radius: 14px; padding: 16px; color: var(--text-main); font-size: 1rem; outline: none; width: 100%; margin-bottom: 16px; }
-.btn-auth-action-submit { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; }
-
-/* 🌟 CORRECTED APP NAVIGATION COCKPIT BAR (HOME, +, PROFILE) */
-.mobile-bottom-navbar {
-  position: fixed; bottom: 0; left: 0; right: 0; height: calc(76px + var(--safe-bottom));
-  background: rgba(12, 17, 26, 0.95); backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border); display: flex; align-items: center; 
-  justify-content: space-around; z-index: 100; padding-bottom: var(--safe-bottom);
-}
-.nav-tab-anchor-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; font-weight: 600; width: 68px; }
-.nav-tab-anchor-btn.active { color: var(--text-main); }
-.nav-tab-anchor-btn.active .nav-tab-icon-frame { color: var(--accent); }
-.nav-tab-icon-frame { font-size: 1.4rem; transition: color 0.2s; }
-.nav-center-action-trigger-orb { width: 56px; height: 56px; background: var(--accent-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #fff; border: none; cursor: pointer; transform: translateY(-16px); box-shadow: 0 4px 20px rgba(255, 69, 58, 0.4); }
-
-/* SLIDE DRAWER MENU GESTURE OVERLAYS */
-.action-sheet-blur-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: flex-end; }
-.action-sheet-blur-overlay.visible { display: flex; }
-.action-sheet-slide-container { width: 100%; background: var(--bg-surface); border-top: 1px solid var(--border); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 24px; padding-bottom: calc(32px + var(--safe-bottom)); transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.1, 0.7, 0.1, 1); }
-.action-sheet-blur-overlay.visible .action-sheet-slide-container { transform: translateY(0); }
-.sheet-drag-handle-pill { width: 44px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px; }
-.sheet-menu-row-option { display: flex; align-items: center; gap: 16px; background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: 16px; margin-bottom: 12px; cursor: pointer; }
-.sheet-option-avatar-icon { font-size: 1.3rem; }
-.sheet-option-meta h4 { font-size: 0.95rem; font-weight: 700; }
-.sheet-option-meta p { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
-
-/* EXPORT MASTER MODAL OVERLAY */
-.global-modal-blur-overlay { position: fixed; inset: 0; background: rgba(6,9,14,0.96); backdrop-filter: blur(10px); z-index: 500; display: none; align-items: center; justify-content: center; padding: 24px; }
-.global-modal-blur-overlay.visible { display: flex; }
-.mastering-pipeline-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 28px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-.pipeline-spinner-ring { width: 48px; height: 48px; border: 4px solid var(--bg-input); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 20px; animation: loopSpin 0.8s linear infinite; }
-@keyframes loopSpin { to { transform: rotate(360deg); } }
-.pipeline-headline-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; }
-.pipeline-sub-narrative-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
-
-.master-success-box-node { display: none; flex-direction: column; gap: 14px; }
-.btn-export-download-link { background: var(--text-main); color: var(--bg-dark); padding: 16px; border-radius: 14px; font-weight: 700; text-decoration: none; font-size: 0.9rem; display: block; text-align: center; }
-.btn-export-secondary-action { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 14px; border-radius: 14px; font-weight: 600; font-size: 0.9rem; cursor: pointer; width: 100%; }
-
-#native-beat-input-bridge, #native-vocal-input-bridge { display: none; }
+  /* scrollbar hidden globally */
+  * { scrollbar-width:none; }
 </style>
 </head>
 <body>
 
-<input type="file" id="native-beat-input-bridge" accept="audio/*" onchange="processDeviceBeatUpload(event)">
-<input type="file" id="native-vocal-input-bridge" accept="audio/*">
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-waveform">
+    <div class="splash-bar" style="height:45%"></div>
+    <div class="splash-bar"></div>
+    <div class="splash-bar"></div>
+    <div class="splash-bar"></div>
+    <div class="splash-bar"></div>
+    <div class="splash-bar"></div>
+    <div class="splash-bar"></div>
+    <div class="splash-bar"></div>
+  </div>
+  <div class="splash-logo">Vox Studio</div>
+  <div class="splash-sub">Your mobile recording studio.<br>Made for Nigerian artists.</div>
+  <div class="splash-input-wrap">
+    <input class="splash-input" id="username-input" type="text" placeholder="Enter your artist name" maxlength="30" autocomplete="off" spellcheck="false">
+  </div>
+  <button class="splash-btn" id="enter-btn" onclick="enterApp()">Enter Studio →</button>
+</div>
 
-<div class="app-screen" id="screen-auth">
-  <div class="auth-center-shell">
-    <div class="auth-brand-logo">
-      <span>⚡ VOX</span>
-      <h1 style="font-family:'Space Grotesk'; font-size:1.8rem; margin-top:6px;">VoxStudio</h1>
+<!-- APP -->
+<div id="app">
+  <div class="screens">
+
+    <!-- HOME -->
+    <div class="screen active" id="screen-home">
+      <div class="page-header">
+        <div class="page-title"><span>Vox</span> Feed</div>
+        <div style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:.5px;">TRENDING</div>
+      </div>
+      <div class="home-greeting">
+        <div class="name" id="greeting-name">Hey, Artist 👋</div>
+        <div class="sub">What are we creating today?</div>
+      </div>
+
+      <!-- YouTube carousel -->
+      <div class="yt-section">
+        <div class="section-label">Inspiration</div>
+        <div class="yt-scroll" id="yt-scroll"></div>
+      </div>
+
+      <!-- Community feed -->
+      <div class="feed-section">
+        <div class="section-label">Community Drops</div>
+        <div id="community-feed"></div>
+      </div>
     </div>
-    <input type="text" class="auth-form-field" id="form-username-field" placeholder="Artist Profile Username" autocomplete="off">
-    <input type="password" class="auth-form-field" id="form-password-field" placeholder="Access Security Password">
-    <button class="btn-auth-action-submit" onclick="handlePortalAccountRegistration()">Enter Studio Cockpit</button>
+
+    <!-- STUDIO -->
+    <div class="screen" id="screen-studio">
+      <div class="page-header">
+        <div class="page-title"><span>Studio</span></div>
+        <div style="font-size:11px;color:var(--text-dim);font-weight:600;">WORKSPACE</div>
+      </div>
+
+      <!-- Beat bar -->
+      <div class="studio-beat-bar" id="beat-bar">
+        <div class="beat-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name" id="beat-name">No beat loaded</div>
+          <div class="beat-bpm" id="beat-bpm-label">— BPM · Tap ▶ to preview</div>
+        </div>
+        <button class="beat-play-btn" id="beat-play-btn" onclick="toggleBeatPreview()">
+          <svg id="beat-play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+      </div>
+
+      <!-- Controls row -->
+      <div class="studio-controls">
+        <button class="ctrl-toggle" id="monitor-toggle" onclick="toggleMonitor()">🎧 Monitor: OFF</button>
+        <button class="ctrl-toggle" id="doubler-toggle" onclick="toggleDoubler()">✦ Auto Double: OFF</button>
+        <button class="upload-beat-btn" onclick="document.getElementById('upload-beat-input').click()">⬆ Upload Beat</button>
+        <input type="file" id="upload-beat-input" accept="audio/*" onchange="handleBeatUpload(event)">
+      </div>
+
+      <!-- Transport -->
+      <div class="transport">
+        <div class="timer" id="session-timer">00:00.00</div>
+        <button class="record-btn" id="record-btn" onclick="toggleRecord()">⏺</button>
+        <div style="font-size:11px;color:var(--text-dim);font-weight:600;letter-spacing:.6px;" id="rec-status">TAP TO RECORD</div>
+        <div style="width:100%">
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="rec-progress"></div></div>
+        </div>
+      </div>
+
+      <!-- Lanes -->
+      <div class="lanes-section">
+        <div class="lanes-header">
+          <div class="section-label" style="margin:0">Vocal Lanes</div>
+          <button class="add-lane-btn" onclick="addLane()" title="Add lane">+</button>
+        </div>
+        <div id="lanes-container"></div>
+      </div>
+
+      <!-- FX -->
+      <div class="fx-section">
+        <div class="section-label">FX Presets</div>
+        <div class="fx-key-row" id="fx-key-row"></div>
+        <div class="fx-cards" id="fx-cards"></div>
+      </div>
+
+      <!-- Master -->
+      <div class="master-row">
+        <button class="master-btn master-mix" onclick="masterMixdown()">Master 🎚️</button>
+        <button class="master-btn master-clip" onclick="openClipExport()">Clip 🎬</button>
+      </div>
+    </div>
+
+    <!-- INSTRUMENTALS -->
+    <div class="screen" id="screen-instrumentals">
+      <div class="page-header">
+        <div class="page-title"><span>Beats</span> Library</div>
+        <div style="font-size:11px;color:var(--text-dim);font-weight:600;">4 LOOPS</div>
+      </div>
+      <div style="padding:0 16px 12px;color:var(--text-dim);font-size:13px;line-height:1.6;">
+        Tap ▶ to preview, then load into Studio.
+      </div>
+      <div id="beats-list"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="screen-profile">
+      <div class="page-header">
+        <div class="page-title"><span>Profile</span></div>
+      </div>
+      <div class="profile-hero">
+        <div class="profile-avatar" id="profile-avatar" style="background:var(--cyan-dim);color:var(--cyan);">?</div>
+        <div class="profile-name" id="profile-name">Artist</div>
+        <div class="profile-handle" id="profile-handle">@artist · Vox Studio</div>
+        <div class="profile-stats">
+          <div class="stat-item"><div class="stat-num" id="stat-tracks">0</div><div class="stat-label">Tracks</div></div>
+          <div class="stat-item"><div class="stat-num" id="stat-lanes">0</div><div class="stat-label">Lanes Used</div></div>
+          <div class="stat-item"><div class="stat-num" id="stat-exports">0</div><div class="stat-label">Exports</div></div>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="section-label">Recent Sessions</div>
+        <div id="recent-tracks"></div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- NAV -->
+  <div id="nav">
+    <button class="nav-btn active" id="nav-home" onclick="showScreen('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      Home
+    </button>
+    <button class="nav-fab" id="nav-fab" onclick="openDrawer()">+</button>
+    <button class="nav-btn" id="nav-profile" onclick="showScreen('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </button>
   </div>
 </div>
 
-<div class="app-screen" id="screen-home">
-  <div class="screen-header">
-    <h2 id="home-personalized-artist-tag">Vox Feed</h2>
-    <div style="font-size: 0.7rem; background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2); color: var(--neon-blue); padding: 4px 10px; border-radius: 20px; font-weight: 700;">PRO LEVEL</div>
-  </div>
-  
-  <div class="screen-body-scroll">
-    <div class="youtube-section-wrapper">
-      <div class="section-title-strip">
-        <h3>🔥 Inspired Afrobeat Feed</h3>
-        <button class="btn-refresh-feed" onclick="shuffleYouTubeInspirationCarousel()">Refresh Deck ↻</button>
-      </div>
-      <div class="youtube-carousel-container" id="youtube-embed-carousel-deck">
-        </div>
+<!-- DRAWER -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Quick Actions</div>
+  <div class="drawer-grid">
+    <div class="drawer-item" onclick="goToStudio()">
+      <div class="drawer-item-icon">🎙️</div>
+      <div class="drawer-item-name">Record</div>
+      <div class="drawer-item-desc">Open Studio</div>
     </div>
-
-    <div class="section-title-strip" style="margin-bottom: 14px;">
-      <h3>👥 Artist Global Shared Showcase</h3>
+    <div class="drawer-item" onclick="goToBeats()">
+      <div class="drawer-item-icon">🥁</div>
+      <div class="drawer-item-name">Beats</div>
+      <div class="drawer-item-desc">Browse loops</div>
     </div>
-    <div class="community-feed-stack" id="community-shared-feed-matrix">
-      </div>
-  </div>
-</div>
-
-<div class="app-screen" id="screen-projects">
-  <div class="screen-header">
-    <button class="header-action-icon" onclick="switchActiveScreenView('home')">✕ Cancel</button>
-    <h2>Arm Instrumental</h2>
-  </div>
-  <div class="screen-body-scroll">
-    <div class="instrumentals-list-stack">
-      <div class="beat-row-card" onclick="loadSelectedStudioInstrumental(1)">
-        <div class="beat-row-left-node">
-          <div class="beat-row-icon-box">🥁</div>
-          <div>
-            <div class="beat-row-title-string">Rema Love Blueprint</div>
-            <div class="beat-row-sub-label"><span>Afro-Soul</span><span>•</span><span>100 BPM</span></div>
-          </div>
-        </div>
-        <div style="color: var(--accent); font-size: 0.8rem; font-weight: 700;">Load Track →</div>
-      </div>
-
-      <div class="beat-row-card" onclick="loadSelectedStudioInstrumental(2)">
-        <div class="beat-row-left-node">
-          <div class="beat-row-icon-box">🎹</div>
-          <div>
-            <div class="beat-row-title-string">Asake Log Drum Machine</div>
-            <div class="beat-row-sub-label"><span>Amapiano Loop</span><span>•</span><span>113 BPM</span></div>
-          </div>
-        </div>
-        <div style="color: var(--accent); font-size: 0.8rem; font-weight: 700;">Load Track →</div>
-      </div>
-
-      <div class="beat-row-card" onclick="loadSelectedStudioInstrumental(3)">
-        <div class="beat-row-left-node">
-          <div class="beat-row-icon-box">🔥</div>
-          <div>
-            <div class="beat-row-title-string">Burna Odyssey Anthem</div>
-            <div class="beat-row-sub-label"><span>Classic Afrobeat</span><span>•</span><span>98 BPM</span></div>
-          </div>
-        </div>
-        <div style="color: var(--accent); font-size: 0.8rem; font-weight: 700;">Load Track →</div>
-      </div>
+    <div class="drawer-item" onclick="closeDrawer();masterMixdown()">
+      <div class="drawer-item-icon">🎚️</div>
+      <div class="drawer-item-name">Master</div>
+      <div class="drawer-item-desc">Export WAV</div>
     </div>
-  </div>
-</div>
-
-<div class="app-screen" id="screen-profile">
-  <div class="screen-header">
-    <h2>My Artist Station</h2>
-    <button class="header-action-icon" onclick="handleProfileLogoutAction()">Logout 🎾</button>
-  </div>
-  <div class="screen-body-scroll">
-    <div class="artist-profile-shell">
-      <div class="profile-avatar-giant" id="profile-avatar-char-node">A</div>
-      <h3 style="font-family:'Space Grotesk'; font-size:1.4rem;" id="profile-string-name-label">Artist Profile</h3>
-      <p style="color: var(--text-muted); font-size:0.8rem; margin-top:2px;">Imo State, Nigeria</p>
-      
-      <div class="profile-stat-grid">
-        <div class="profile-stat-card">
-          <h4 id="stat-tracks-count-node">0</h4>
-          <p>Mixdowns</p>
-        </div>
-        <div class="profile-stat-card">
-          <h4>12</h4>
-          <p>Max Channels</p>
-        </div>
-        <div class="profile-stat-card">
-          <h4>HD</h4>
-          <p>Audio Engine</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="app-screen" id="screen-studio">
-  <div class="screen-header">
-    <button class="header-action-icon" onclick="switchActiveScreenView('home')">← Close</button>
-    <h2 id="studio-active-track-name-title">Vocal Studio Workspace</h2>
-    <button style="background:none; border:none; color:var(--neon-blue); font-size:0.85rem; font-weight:700; cursor:pointer;" onclick="triggerAutomatedAutoMixdownMastering()">Master 🎚️</button>
-  </div>
-  
-  <div class="screen-body-scroll">
-    <div class="studio-waveform-header-panel">
-      <canvas id="canvas-timeline-wave" class="waveform-canvas-ribbon"></canvas>
-      <div class="playhead-timeline-tracker-line"></div>
-      <div class="waveform-status-text-node" id="waveform-engine-readout-label">No beat backing layer armed</div>
-    </div>
-
-    <div class="studio-recording-hardware-dock">
-      <div class="record-dock-meta">
-        <span>Hardware Transport Tracker</span>
-        <div class="record-dock-timer" id="studio-timer-readout-node">00:00.00</div>
-      </div>
-      <div class="record-dock-action-cluster">
-        <button class="btn-dock-record-trigger" id="studio-main-record-btn" onclick="toggleVocalRecordingExecutionPipeline()">⏺</button>
-      </div>
-    </div>
-
-    <div class="vocal-lanes-vertical-stack" id="vocal-lanes-container-stack">
-      </div>
-
-    <button class="btn-dynamic-add-layer-trigger" onclick="appendNewVocalTrackLaneLayer()">+ Layer Additional Vocal Track Channel (Max 12)</button>
-
-    <div class="voloco-effects-panel-box">
-      <div class="voloco-grid-selector-row">
-        <div class="voloco-selector-dropdown-wrapper">
-          <label>Vocal Scale Key</label>
-          <select class="voloco-select-tag" id="voloco-scale-key-node">
-            <option>C Major</option><option>G Major</option><option>D Major</option>
-            <option>A Minor</option><option>E Minor</option><option>F Major</option>
-          </select>
-        </div>
-        <div class="voloco-selector-dropdown-wrapper">
-          <label>Auto-Tune Profile Amount</label>
-          <select class="voloco-select-tag" id="voloco-correction-intensity-node">
-            <option value="1.0">Extreme Auto-Tune Curve</option>
-            <option value="0.6" selected>Natural Vocal Pitch Fix</option>
-            <option value="0.0">Bypass Filter Engine</option>
-          </select>
-        </div>
-      </div>
-      
-      <label style="font-size:0.65rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:8px; letter-spacing:0.6px;">Vocal Acoustic Style Preset</label>
-      <div class="presets-horizontal-carousel">
-        <div class="preset-vibe-pill-card active" id="preset-node-lead" onclick="assignActiveVocalVibeProfile('lead')">🎤 Pure Lead</div>
-        <div class="preset-vibe-pill-card" id="preset-node-warm" onclick="assignActiveVocalVibeProfile('warm')">🔥 Big Warmth</div>
-        <div class="preset-vibe-pill-card" id="preset-node-ambient" onclick="assignActiveVocalVibeProfile('ambient')">🌌 Ambient Space</div>
-        <div class="preset-vibe-pill-card" id="preset-node-chorus" onclick="assignActiveVocalVibeProfile('chorus')">👥 Smart Doubler</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="mobile-bottom-navbar" id="app-global-navigation-bar" style="display: none;">
-  <button class="nav-tab-anchor-btn active" id="nav-btn-home" onclick="switchActiveScreenView('home')">
-    <div class="nav-tab-icon-frame">🏠</div>
-    <span>Home</span>
-  </button>
-  
-  <button class="nav-center-action-trigger-orb" onclick="toggleBottomActionSheetTrayMenu(true)">+</button>
-  
-  <button class="nav-tab-anchor-btn" id="nav-btn-profile" onclick="switchActiveScreenView('profile')">
-    <div class="nav-tab-icon-frame">👤</div>
-    <span>Profile</span>
-  </button>
-</div>
-
-<div class="action-sheet-blur-overlay" id="global-action-sheet-tray" onclick="toggleBottomActionSheetTrayMenu(false)">
-  <div class="action-sheet-slide-container" onclick="event.stopPropagation()">
-    <div class="sheet-drag-handle-pill"></div>
-    
-    <div class="sheet-menu-row-option" onclick="triggerBottomMenuActionRoute('quickstart')">
-      <div class="sheet-option-avatar-icon">🚀</div>
-      <div class="sheet-option-meta">
-        <h4>Quick Start Studio</h4>
-        <p>Open studio instantly inside a clean vocal workspace session</p>
-      </div>
-    </div>
-
-    <div class="sheet-menu-row-option" onclick="triggerBottomMenuActionRoute('newproject')">
-      <div class="sheet-option-avatar-icon">📁</div>
-      <div class="sheet-option-meta">
-        <h4>Load Afrobeat Loop Blueprints</h4>
-        <p>Arm studio tracks with built-in Amapiano or Afrobeat drums</p>
-      </div>
-    </div>
-
-    <div class="sheet-menu-row-option" onclick="triggerBottomMenuActionRoute('import')">
-      <div class="sheet-option-avatar-icon">📥</div>
-      <div class="sheet-option-meta">
-        <h4>Import Device Custom Beat</h4>
-        <p>Load downloaded MP3 instrumentals from Android storage</p>
-      </div>
+    <div class="drawer-item" onclick="closeDrawer();openClipExport()">
+      <div class="drawer-item-icon">🎬</div>
+      <div class="drawer-item-name">Clip</div>
+      <div class="drawer-item-desc">30s social video</div>
     </div>
   </div>
 </div>
 
-<div class="global-modal-blur-overlay" id="global-mastering-modal">
-  <div class="mastering-pipeline-card">
-    <div id="master-processing-box-node">
-      <div class="pipeline-spinner-ring"></div>
-      <div class="pipeline-headline-text" id="mastering-narrative-header-string">Compiling Tracks...</div>
-      <div class="pipeline-sub-narrative-text">Processing core client-side algorithm layers to master vocal layers.</div>
-    </div>
-    
-    <div id="master-success-box-node" class="master-success-box-node">
-      <div style="width:52px; height:52px; background:rgba(34,197,94,0.1); color:var(--neon-green); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-weight:700; font-size:1.5rem;">✓</div>
-      <div class="pipeline-headline-text">AutoMix Compiled!</div>
-      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:20px;">Your processed Afrobeat track mix is ready for export.</p>
-      
-      <a class="btn-export-download-link" id="action-download-wav-anchor" href="#">Download Studio .WAV File</a>
-      <button class="btn-export-secondary-action" id="action-preview-mix-btn" onclick="toggleMixdownPlaybackPreviewChannel()">▶ Preview Track Master</button>
-      <button class="btn-export-secondary-action" style="background:var(--accent); color:#fff; border:none;" onclick="commitTrackToLocalCommunityFeedBoard()">Publish to Shared Artist Feed</button>
-      <button class="btn-export-secondary-action" style="background:transparent; border:none; color:var(--text-muted);" onclick="dismissMasteringModalOverlay()">Return to Studio Workspace</button>
-    </div>
+<!-- CLIP MODAL -->
+<div id="clip-modal">
+  <div style="font-family:var(--font-brand);font-size:20px;font-weight:700;color:var(--text)">30s Social Clip</div>
+  <canvas id="clip-canvas" width="360" height="640"></canvas>
+  <div class="clip-controls">
+    <button class="clip-btn clip-close" onclick="closeClipModal()">Cancel</button>
+    <button class="clip-btn clip-save" id="clip-record-btn" onclick="startClipRecording()">⏺ Record Clip</button>
   </div>
+  <div style="font-size:11px;color:var(--text-dim);text-align:center;" id="clip-status">Preview · Hit Record to capture 30s</div>
 </div>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
-const NIGERIAN_AFROBEAT_YOUTUBE_DECK = [
-  { id: "q3lX2p_Uy9I", title: "Asake - Wave (Official Video) ft. Central Cee" },
-  { id: "h7i9_E7M_7Y", title: "Rema - BENIN BOYS ft. Shallipopi" },
-  { id: "d6C0bE3cR6M", title: "Burna Boy - Higher (Official Music Video)" },
-  { id: "y6vCg7nS9Yg", title: "Omah Lay - Holy Ghost (Official Visualizer)" },
-  { id: "fE9xH26G1kY", title: "Seyi Vibez - Cana (Official Music Release)" },
-  { id: "eW7tVnZ8XpQ", title: "Victony - Risk (Official Music Video)" },
-  { id: "xR3C0V8B7nG", title: "Omah Lay Type Beat - 'Soso Deep' Instrumental" },
-  { id: "pW8vM9C7XkR", title: "Amapiano Type Beat - 'Log Drum Anthem' 2026" },
-  { id: "mR5vC7nK8Yt", title: "Burna Boy Type Beat - 'Odogwu Legacy' Instrumental" }
-];
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const STATE = {
+  username: '',
+  currentScreen: 'home',
+  audioCtx: null,
+  isRecording: false,
+  beatPlaying: false,
+  beatPreviewPlaying: false,
+  monitorOn: false,
+  doublerOn: false,
+  currentBeat: null,        // { name, bpm, genre, color, nodes }
+  beatBuffer: null,
+  beatSource: null,
+  beatStartTime: 0,
+  beatOffset: 0,
+  recStartTime: 0,
+  timerInterval: null,
+  mediaStream: null,
+  mediaRecorder: null,
+  monitorNode: null,
+  fxChain: null,
+  activeFX: 'lead',
+  activeKey: 'C Major',
+  lanes: [],
+  recordings: [],           // per lane recorded buffers
+  recordingChunks: [],
+  laneIdCounter: 0,
+  trackCount: 0,
+  exportCount: 0,
+  clipMediaRecorder: null,
+  clipAnimFrame: null,
+  recentSessions: [],
+};
 
-let activeAudioContextInstance = null;
-let currentActiveViewId = "auth";
-let armedInstrumentalAudioBuffer = null;
-let activeInstrumentalSourceNode = null;
-let instrumentalGainNodeNode = null;
+// ═══════════════════════════════════════════════════════
+// AUDIO CONTEXT BOOT
+// ═══════════════════════════════════════════════════════
+function getAudioCtx() {
+  if (!STATE.audioCtx) {
+    STATE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (STATE.audioCtx.state === 'suspended') STATE.audioCtx.resume();
+  return STATE.audioCtx;
+}
 
-let vocalTracksRegistryArray = [];
-let assignedIncrementingTrackIdTracker = 0;
-let activeTargetRecordingTrackId = null;
-
-let browserMediaRecorderInstance = null;
-let capturedAudioChunksBuffer = [];
-let localHardwareMicAudioStream = null;
-
-let isTimelinePlayingState = false;
-let trackTimelineStartTimeStamp = 0;
-let clockIntervalTimerId = null;
-let selectedVibePresetProfileKey = "lead";
-let userSavedTracksCounter = 0;
-
-let computedFinalMixdownBuffer = null;
-let mixdownPreviewPlaybackSourceNode = null;
-let isMixdownPreviewActivePlaying = false;
-
-window.addEventListener('DOMContentLoaded', () => {
-  verifyAccountSessionTokenPersistence();
-  hydrateCommunityFeedMockPosts();
+// ═══════════════════════════════════════════════════════
+// ENTRY
+// ═══════════════════════════════════════════════════════
+document.getElementById('username-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') enterApp();
 });
 
-function verifyAccountSessionTokenPersistence() {
-  const localSessionUser = localStorage.getItem('vox_studio_active_user');
-  if (localSessionUser) {
-    document.getElementById('profile-string-name-label').textContent = localSessionUser;
-    document.getElementById('profile-avatar-char-node').textContent = localSessionUser.substring(0,1).toUpperCase();
-    document.getElementById('app-global-navigation-bar').style.display = 'flex';
-    switchActiveScreenView('home');
-    shuffleYouTubeInspirationCarousel();
-  } else {
-    switchActiveScreenView('auth');
-  }
-}
-
-function handlePortalAccountRegistration() {
-  const inputUser = document.getElementById('form-username-field').value.trim();
-  if (!inputUser) {
-    alert("Please assign a valid Artist Username.");
-    return;
-  }
-  localStorage.setItem('vox_studio_active_user', inputUser);
-  document.getElementById('profile-string-name-label').textContent = inputUser;
-  document.getElementById('profile-avatar-char-node').textContent = inputUser.substring(0,1).toUpperCase();
-  document.getElementById('app-global-navigation-bar').style.display = 'flex';
-  switchActiveScreenView('home');
-  shuffleYouTubeInspirationCarousel();
-}
-
-function handleProfileLogoutAction() {
-  localStorage.removeItem('vox_studio_active_user');
-  document.getElementById('app-global-navigation-bar').style.display = 'none';
-  switchActiveScreenView('auth');
-}
-
-function switchActiveScreenView(targetScreenId) {
-  stopAllActiveTimelinePlaybackNodes();
-  document.querySelectorAll('.app-screen').forEach(scr => scr.classList.remove('active'));
-  document.querySelectorAll('.nav-tab-anchor-btn').forEach(btn => btn.classList.remove('active'));
-  
-  const targetedViewElement = document.getElementById(`screen-${targetScreenId}`);
-  if (targetedViewElement) {
-    targetedViewElement.classList.add('active');
-    currentActiveViewId = targetScreenId;
-  }
-  
-  const relativeNavTabBtn = document.getElementById(`nav-btn-${targetScreenId}`);
-  if (relativeNavTabBtn) relativeNavTabBtn.classList.add('active');
-}
-
-function shuffleYouTubeInspirationCarousel() {
-  const container = document.getElementById('youtube-embed-carousel-deck');
-  container.innerHTML = "";
-  const shuffledDeckCopy = [...NIGERIAN_AFROBEAT_YOUTUBE_DECK].sort(() => 0.5 - Math.random());
-  const selectedBatchOfThreeVideos = shuffledDeckCopy.slice(0, 3);
-  
-  selectedBatchOfThreeVideos.forEach(video => {
-    const cardNodeElement = document.createElement('div');
-    cardNodeElement.className = "youtube-card-item";
-    cardNodeElement.innerHTML = `
-      <div class="video-iframe-embed-holder">
-        <iframe src="https://www.youtube.com/embed/${video.id}?modestbranding=1&rel=0&controls=1" allowfullscreen></iframe>
-      </div>
-      <div class="video-meta-label">${video.title}</div>
-    `;
-    container.appendChild(cardNodeElement);
-  });
-}
-
-function toggleBottomActionSheetTrayMenu(forceOpenState) {
-  const trayOverlay = document.getElementById('global-action-sheet-tray');
-  if (forceOpenState) trayOverlay.classList.add('visible');
-  else trayOverlay.classList.remove('visible');
-}
-
-function triggerBottomMenuActionRoute(routeActionKey) {
-  toggleBottomActionSheetTrayMenu(false);
-  if (routeActionKey === 'quickstart') {
-    initializeVocalStudioWorkspaceTrackLanes();
-    switchActiveScreenView('studio');
-    document.getElementById('studio-active-track-name-title').textContent = "Quick Track Session";
-  } else if (routeActionKey === 'newproject') {
-    switchActiveScreenView('projects');
-  } else if (routeActionKey === 'import') {
-    document.getElementById('native-beat-input-bridge').click();
-  }
-}
-
-function fetchGlobalAudioContextChannel() {
-  if (!activeAudioContextInstance) {
-    activeAudioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
-    instrumentalGainNodeNode = activeAudioContextInstance.createGain();
-    instrumentalGainNodeNode.gain.value = 0.7;
-    instrumentalGainNodeNode.connect(activeAudioContextInstance.destination);
-  }
-  if (activeAudioContextInstance.state === 'suspended') {
-    activeAudioContextInstance.resume();
-  }
-  return activeAudioContextInstance;
-}
-
-function initializeVocalStudioWorkspaceTrackLanes() {
-  const targetStackContainer = document.getElementById('vocal-lanes-container-stack');
-  targetStackContainer.innerHTML = "";
-  vocalTracksRegistryArray = [];
-  assignedIncrementingTrackIdTracker = 0;
-  appendNewVocalTrackLaneLayer();
-}
-
-function appendNewVocalTrackLaneLayer() {
-  if (vocalTracksRegistryArray.length >= 12) {
-    alert("Max 12 vocal tracks layer ceiling limit reached.");
-    return;
-  }
-  assignedIncrementingTrackIdTracker++;
-  const uniqueLayerId = assignedIncrementingTrackIdTracker;
-  
-  const layerObjectStructure = {
-    id: uniqueLayerId,
-    audioBufferInstance: null,
-    isMuted: false,
-    volumeFactorValue: 0.8,
-    runtimeSourceNodeInstance: null,
-    runtimeGainNodeInstance: null
-  };
-  vocalTracksRegistryArray.push(layerObjectStructure);
-  
-  const laneRowHtmlNode = document.createElement('div');
-  laneRowHtmlNode.className = "vocal-lane-row-strip";
-  laneRowHtmlNode.id = `vocal-lane-row-node-${uniqueLayerId}`;
-  laneRowHtmlNode.onclick = () => selectActiveVocalRecordingTargetLaneChannel(uniqueLayerId);
-  
-  laneRowHtmlNode.innerHTML = `
-    <div class="lane-top-row">
-      <div class="vocal-lane-left-details">
-        <div class="vocal-lane-active-indicator"></div>
-        <div>
-          <div class="vocal-lane-title-string">Vocal Lane Track Channel ${uniqueLayerId}</div>
-          <div class="vocal-lane-status-subtext" id="lane-status-label-string-${uniqueLayerId}">Empty Audio Segment — Ready to record</div>
-        </div>
-      </div>
-      <div class="vocal-lane-quick-actions">
-        <button class="btn-lane-control-node" id="lane-mute-btn-${uniqueLayerId}" onclick="event.stopPropagation(); toggleVocalLaneMuteSwitchState(${uniqueLayerId})">MUTE</button>
-        <button class="btn-lane-control-node" style="color: var(--text-main);" onclick="event.stopPropagation(); triggerNativeAudioFileImportBrowser(${uniqueLayerId})">📥</button>
-        <button class="btn-lane-control-node" style="color: var(--accent);" onclick="event.stopPropagation(); deleteTargetVocalLaneTrackLayerRow(${uniqueLayerId})">✕</button>
-      </div>
-    </div>
-    <div class="lane-mix-controls" onclick="event.stopPropagation()">
-      <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">VOL</span>
-      <input type="range" class="lane-volume-slider" min="0" max="1" step="0.05" value="0.8" oninput="adjustVocalLaneVolumeWeightLevel(${uniqueLayerId}, this.value)">
-    </div>
-  `;
-  
-  document.getElementById('vocal-lanes-container-stack').appendChild(laneRowHtmlNode);
-  if (activeTargetRecordingTrackId === null) {
-    selectActiveVocalRecordingTargetLaneChannel(uniqueLayerId);
-  }
-}
-
-function selectActiveVocalRecordingTargetLaneChannel(layerId) {
-  if (browserMediaRecorderInstance && browserMediaRecorderInstance.state === "recording") return;
-  activeTargetRecordingTrackId = layerId;
-  document.querySelectorAll('.vocal-lane-row-strip').forEach(row => row.classList.remove('armed'));
-  const selectedRowNode = document.getElementById(`vocal-lane-row-node-${layerId}`);
-  if (selectedRowNode) selectedRowNode.classList.add('armed');
-}
-
-function adjustVocalLaneVolumeWeightLevel(layerId, volumeVal) {
-  const match = vocalTracksRegistryArray.find(t => t.id === layerId);
-  if (match) {
-    match.volumeFactorValue = parseFloat(volumeVal);
-    if (match.runtimeGainNodeInstance && !match.isMuted) {
-      match.runtimeGainNodeInstance.gain.setValueAtTime(match.volumeFactorValue, 0);
-    }
-  }
-}
-
-function toggleVocalLaneMuteSwitchState(layerId) {
-  const match = vocalTracksRegistryArray.find(t => t.id === layerId);
-  if (!match) return;
-  match.isMuted = !match.isMuted;
-  const muteBtn = document.getElementById(`lane-mute-btn-${layerId}`);
-  if (match.isMuted) {
-    muteBtn.classList.add('active');
-    if (match.runtimeGainNodeInstance) match.runtimeGainNodeInstance.gain.setValueAtTime(0, 0);
-  } else {
-    muteBtn.classList.remove('active');
-    if (match.runtimeGainNodeInstance) match.runtimeGainNodeInstance.gain.setValueAtTime(match.volumeFactorValue, 0);
-  }
-}
-
-function deleteTargetVocalLaneTrackLayerRow(layerId) {
-  if (browserMediaRecorderInstance && browserMediaRecorderInstance.state === "recording") return;
-  vocalTracksRegistryArray = vocalTracksRegistryArray.filter(t => t.id !== layerId);
-  const DOMNode = document.getElementById(`vocal-lane-row-node-${layerId}`);
-  if (DOMNode) DOMNode.remove();
-  
-  if (activeTargetRecordingTrackId === layerId) {
-    activeTargetRecordingTrackId = vocalTracksRegistryArray.length > 0 ? vocalTracksRegistryArray[0].id : null;
-    if (activeTargetRecordingTrackId !== null) {
-      document.getElementById(`vocal-lane-row-node-${activeTargetRecordingTrackId}`).classList.add('armed');
-    }
-  }
-}
-
-async function loadSelectedStudioInstrumental(beatIndexId) {
-  fetchGlobalAudioContextChannel();
-  initializeVocalStudioWorkspaceTrackLanes();
-  
-  let targetBpmValue = 100;
-  let beatTitleText = "Afro Beat Blueprint";
-  if (beatIndexId === 1) { targetBpmValue = 100; beatTitleText = "Rema Love Blueprint"; }
-  else if (beatIndexId === 2) { targetBpmValue = 113; beatTitleText = "Asake Log Drum Machine"; }
-  else if (beatIndexId === 3) { targetBpmValue = 98; beatTitleText = "Burna Odyssey Anthem"; }
-  
-  document.getElementById('studio-active-track-name-title').textContent = beatTitleText;
-  document.getElementById('waveform-engine-readout-label').textContent = "Compiling foundation instrumental wave matrix...";
-  switchActiveScreenView('studio');
-  
+function enterApp() {
+  const val = document.getElementById('username-input').value.trim();
+  STATE.username = val || 'Artist';
+  document.getElementById('splash').style.opacity = '0';
+  document.getElementById('splash').style.transform = 'scale(.97)';
+  document.getElementById('splash').style.transition = 'all .3s';
   setTimeout(() => {
-    armedInstrumentalAudioBuffer = syntheticallyCompileAfrobeatGridSamples(targetBpmValue, beatIndexId);
-    document.getElementById('waveform-engine-readout-label').textContent = `Loop Backing Loaded (${targetBpmValue} BPM)`;
-    const canvas = document.getElementById('canvas-timeline-wave');
-    canvas.width = canvas.parentElement.offsetWidth;
-    graphTimelineWaveformRepresentationVector(canvas, armedInstrumentalAudioBuffer, '#00f0ff');
-  }, 150);
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    initApp();
+  }, 300);
 }
 
-function processDeviceBeatUpload(event) {
-  const targetFile = event.target.files[0];
-  if (!targetFile) return;
-  fetchGlobalAudioContextChannel();
-  initializeVocalStudioWorkspaceTrackLanes();
-  
-  document.getElementById('waveform-engine-readout-label').textContent = "Parsing external audio data block...";
-  document.getElementById('studio-active-track-name-title').textContent = targetFile.name.substring(0, 18) + "...";
-  switchActiveScreenView('studio');
-  
-  const fileReader = new FileReader();
-  fileReader.onload = async (e) => {
+function initApp() {
+  updateProfileUI();
+  buildYouTubeCarousel();
+  buildCommunityFeed();
+  buildBeatsList();
+  buildFXPanel();
+  initLanes();
+  renderRecentTracks();
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'home') document.getElementById('nav-home').classList.add('active');
+  if (name === 'profile') document.getElementById('nav-profile').classList.add('active');
+  STATE.currentScreen = name;
+  closeDrawer();
+}
+
+function openDrawer() {
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+function goToStudio() { showScreen('studio'); }
+function goToBeats() { showScreen('instrumentals'); }
+
+// ═══════════════════════════════════════════════════════
+// PROFILE
+// ═══════════════════════════════════════════════════════
+function updateProfileUI() {
+  const n = STATE.username || 'Artist';
+  document.getElementById('greeting-name').textContent = `Hey, ${n} 👋`;
+  document.getElementById('profile-name').textContent = n;
+  document.getElementById('profile-handle').textContent = `@${n.toLowerCase().replace(/\s+/g,'_')} · Vox Studio`;
+  document.getElementById('profile-avatar').textContent = n[0].toUpperCase();
+  document.getElementById('stat-tracks').textContent = STATE.trackCount;
+  document.getElementById('stat-lanes').textContent = STATE.lanes.length;
+  document.getElementById('stat-exports').textContent = STATE.exportCount;
+}
+
+// ═══════════════════════════════════════════════════════
+// YOUTUBE CAROUSEL
+// ═══════════════════════════════════════════════════════
+const YT_VIDEOS = [
+  { id: 'kdLnzJGBDEg', artist: 'Asake', title: 'Yoga' },
+  { id: 'RMbVUZUJNM4', artist: 'Burna Boy', title: 'City Boys' },
+  { id: 'ppkpNxNxWAE', artist: 'Rema', title: 'Calm Down' },
+  { id: 'g6kKOnCU3cw', artist: 'Wizkid', title: 'Essence' },
+  { id: '7f4YCUr7q2M', artist: 'Davido', title: 'Fall' },
+  { id: 'tdHaWoW2Jb0', artist: 'Fireboy DML', title: 'Peru' },
+];
+
+function buildYouTubeCarousel() {
+  const container = document.getElementById('yt-scroll');
+  YT_VIDEOS.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'yt-card';
+    card.innerHTML = `
+      <iframe class="yt-frame" src="https://www.youtube.com/embed/${v.id}?rel=0&modestbranding=1" 
+        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+      <div class="yt-meta">
+        <div class="yt-artist">${v.artist}</div>
+        <div class="yt-desc">${v.title}</div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// COMMUNITY FEED
+// ═══════════════════════════════════════════════════════
+const FEED_DATA = [
+  { name:'Zlatan NG', track:'Zanku Riddim', bpm:'98 BPM', tag:'Afrobeat', color:'#ff453a', yt:'https://youtu.be/kdLnzJGBDEg' },
+  { name:'TemmyBeat', track:'Lagos Nights', bpm:'112 BPM', tag:'Amapiano', color:'#00f0ff', yt:'https://youtu.be/RMbVUZUJNM4' },
+  { name:'Xclusive', track:'Afro Heat Vol.3', bpm:'100 BPM', tag:'Afro-fusion', color:'#7c3aed', yt:'https://youtu.be/ppkpNxNxWAE' },
+  { name:'KobiBeats', track:'Highlife Wave', bpm:'110 BPM', tag:'Highlife', color:'#f59e0b', yt:'https://youtu.be/g6kKOnCU3cw' },
+  { name:'DrillNaija', track:'Trap Afro 001', bpm:'145 BPM', tag:'Trap Afro', color:'#10b981', yt:'https://youtu.be/7f4YCUr7q2M' },
+];
+
+function buildCommunityFeed() {
+  const container = document.getElementById('community-feed');
+  FEED_DATA.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'feed-card';
+    el.innerHTML = `
+      <div class="feed-avatar" style="background:${f.color}22;color:${f.color}">${f.name[0]}</div>
+      <div class="feed-info">
+        <div class="feed-name">${f.name}</div>
+        <div class="feed-track">${f.track} · ${f.bpm}</div>
+        <span class="feed-tag" style="background:${f.color}22;color:${f.color}">${f.tag}</span>
+      </div>
+      <button class="feed-play" onclick="window.open('${f.yt}','_blank')">
+        <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>`;
+    container.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// BEATS — PROCEDURAL WEB AUDIO
+// ═══════════════════════════════════════════════════════
+const BEATS_CONFIG = [
+  { name:'Afrobeat Groove', bpm:98, genre:'Afrobeat', color:'#ff453a', tag:'🔥 HOT',
+    pattern: { kick:[0,4,6,10], snare:[2,6,10,14], hihat:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] }},
+  { name:'Dancehall Riddim', bpm:96, genre:'Dancehall', color:'#f59e0b', tag:'🇯🇲 RIDDIM',
+    pattern: { kick:[0,3,8,11], snare:[4,12], hihat:[0,2,4,6,8,10,12,14] }},
+  { name:'Highlife Vibes', bpm:110, genre:'Highlife', color:'#10b981', tag:'🎸 CLASSIC',
+    pattern: { kick:[0,6,8,14], snare:[4,12], hihat:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] }},
+  { name:'Trap Afro Banger', bpm:145, genre:'Trap Afro', color:'#7c3aed', tag:'💜 HARD',
+    pattern: { kick:[0,2,8,10], snare:[4,6,12,14], hihat:[0,1,2,3,4,5,6,7,8] }},
+];
+
+function buildBeatsList() {
+  const container = document.getElementById('beats-list');
+  BEATS_CONFIG.forEach((b, i) => {
+    const el = document.createElement('div');
+    el.className = 'beat-tile';
+    el.id = `beat-tile-${i}`;
+    const bars = [60,90,50,100,70,40,85,55].map((h,j) =>
+      `<div class="beat-tile-bar" style="height:${h}%;background:${b.color};animation-delay:${j*0.1}s"></div>`
+    ).join('');
+    el.innerHTML = `
+      <div class="beat-tile-vis" style="background:${b.color}15">${bars}</div>
+      <div class="beat-tile-info">
+        <div class="beat-tile-name">${b.name}</div>
+        <div class="beat-tile-bpm">${b.bpm} BPM · ${b.genre}</div>
+        <span class="beat-tile-tag" style="background:${b.color}22;color:${b.color}">${b.tag}</span>
+      </div>
+      <button class="beat-tile-load" id="beat-load-btn-${i}" onclick="loadBeatToStudio(${i})">Load →</button>`;
+    container.appendChild(el);
+  });
+}
+
+// Generate a beat buffer procedurally
+async function generateBeatBuffer(cfg) {
+  const ctx = getAudioCtx();
+  const bpm = cfg.bpm;
+  const steps = 16;
+  const stepDur = (60 / bpm) / 4;
+  const totalDur = stepDur * steps;
+  const sr = ctx.sampleRate;
+  const offline = new OfflineAudioContext(2, Math.ceil(sr * totalDur * 4), sr);
+
+  function synth(offCtx, type, freq, start, dur, gain=0.8, detune=0) {
+    const osc = offCtx.createOscillator();
+    const env = offCtx.createGain();
+    const g = offCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    osc.detune.value = detune;
+    env.gain.setValueAtTime(gain, start);
+    env.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    g.gain.value = 1;
+    osc.connect(env); env.connect(g); g.connect(offCtx.destination);
+    osc.start(start); osc.stop(start + dur);
+  }
+
+  function makeNoise(offCtx, start, dur, g=0.5) {
+    const len = Math.ceil(offCtx.sampleRate * dur);
+    const buf = offCtx.createBuffer(1, len, offCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i=0;i<len;i++) data[i] = Math.random()*2-1;
+    const src = offCtx.createBufferSource();
+    src.buffer = buf;
+    const env = offCtx.createGain();
+    env.gain.setValueAtTime(g, start);
+    env.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    const filt = offCtx.createBiquadFilter();
+    filt.type = 'bandpass';
+    filt.frequency.value = 8000;
+    src.connect(filt); filt.connect(env); env.connect(offCtx.destination);
+    src.start(start); src.stop(start + dur);
+  }
+
+  for (let loop=0; loop<4; loop++) {
+    const off = loop * totalDur;
+    cfg.pattern.kick.forEach(s => synth(offline, 'sine', 60, off+s*stepDur, 0.3, 1.0));
+    cfg.pattern.snare.forEach(s => makeNoise(offline, off+s*stepDur, 0.15, 0.4));
+    cfg.pattern.hihat.forEach(s => makeNoise(offline, off+s*stepDur, 0.04, 0.2));
+
+    // Bass line
+    const bassNotes = [55, 55, 73, 55, 58, 55, 65, 55];
+    for (let i=0;i<steps;i+=2) {
+      const n = bassNotes[Math.floor(i/2)] || 55;
+      synth(offline, 'triangle', n, off+i*stepDur, stepDur*1.8, 0.6);
+    }
+  }
+
+  const rendered = await offline.startRendering();
+  return rendered;
+}
+
+async function loadBeatToStudio(index) {
+  const cfg = BEATS_CONFIG[index];
+  showToast(`Loading ${cfg.name}...`);
+  const buf = await generateBeatBuffer(cfg);
+  STATE.beatBuffer = buf;
+  STATE.currentBeat = cfg;
+
+  document.getElementById('beat-name').textContent = cfg.name;
+  document.getElementById('beat-bpm-label').textContent = `${cfg.bpm} BPM · ${cfg.genre} · ▶ Preview`;
+
+  // Reset load buttons
+  BEATS_CONFIG.forEach((_,i) => {
+    const btn = document.getElementById(`beat-load-btn-${i}`);
+    if (btn) { btn.textContent = 'Load →'; btn.classList.remove('loaded'); }
+  });
+  const loadBtn = document.getElementById(`beat-load-btn-${index}`);
+  if (loadBtn) { loadBtn.textContent = 'Loaded ✓'; loadBtn.classList.add('loaded'); }
+
+  showToast(`${cfg.name} loaded into Studio ✓`);
+  showScreen('studio');
+}
+
+// ═══════════════════════════════════════════════════════
+// BEAT UPLOAD
+// ═══════════════════════════════════════════════════════
+function handleBeatUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  showToast('Loading your beat...');
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const ctx = getAudioCtx();
     try {
-      armedInstrumentalAudioBuffer = await activeAudioContextInstance.decodeAudioData(e.target.result);
-      document.getElementById('waveform-engine-readout-label').textContent = "Custom Android File Track Loaded";
-      const canvas = document.getElementById('canvas-timeline-wave');
-      canvas.width = canvas.parentElement.offsetWidth;
-      graphTimelineWaveformRepresentationVector(canvas, armedInstrumentalAudioBuffer, '#00f0ff');
-    } catch (err) {
-      alert("Unsupported file conversion target structure formatting.");
-      switchActiveScreenView('home');
-    }
+      const buf = await ctx.decodeAudioData(ev.target.result.slice(0));
+      STATE.beatBuffer = buf;
+      STATE.currentBeat = { name: file.name.replace(/\.[^.]+$/,''), bpm: '—', genre: 'Custom', color: '#00f0ff' };
+      document.getElementById('beat-name').textContent = STATE.currentBeat.name;
+      document.getElementById('beat-bpm-label').textContent = `Custom Beat · ▶ Preview`;
+      showToast('Beat loaded ✓');
+    } catch(err) { showToast('Could not decode audio file'); }
   };
-  fileReader.readAsArrayBuffer(targetFile);
+  reader.readAsArrayBuffer(file);
 }
 
-function syntheticallyCompileAfrobeatGridSamples(bpm, styleIndex) {
-  const sampleRateHz = activeAudioContextInstance.sampleRate;
-  const loopLengthSeconds = 120;
-  const totalArraySamplesCount = sampleRateHz * loopLengthSeconds;
-  const calculatedBufferObj = activeAudioContextInstance.createBuffer(2, totalArraySamplesCount, sampleRateHz);
-  const leftChannelData = calculatedBufferObj.getChannelData(0);
-  const rightChannelData = calculatedBufferObj.getChannelData(1);
-  const stepDurationSamples = Math.floor(sampleRateHz * (60 / bpm));
-  
-  for (let s = 0; s < totalArraySamplesCount; s++) {
-    const quantizedBeatStep = s % stepDurationSamples;
-    const microSixteenthStep = s % Math.floor(stepDurationSamples / 4);
-    let waveValueAccumulator = 0;
-    
-    if (quantizedBeatStep < Math.floor(stepDurationSamples * 0.15)) {
-      const decay = quantizedBeatStep / (stepDurationSamples * 0.15);
-      waveValueAccumulator += Math.sin(2 * Math.PI * 52 * (1 - decay) * (quantizedBeatStep / sampleRateHz)) * Math.exp(-3.5 * decay);
-    }
-    if (styleIndex === 2) {
-      if (quantizedBeatStep > Math.floor(stepDurationSamples * 0.45) && quantizedBeatStep < Math.floor(stepDurationSamples * 0.75)) {
-        waveValueAccumulator += Math.sin(2 * Math.PI * 43 * (quantizedBeatStep / sampleRateHz)) * 0.45;
-      }
-    } else {
-      if (microSixteenthStep < Math.floor(stepDurationSamples * 0.04)) {
-        waveValueAccumulator += (Math.random() - 0.5) * 0.12;
-      }
-    }
-    const toneHarmonicFreq = 115 + (20 * (Math.floor(s / (stepDurationSamples * 4)) % 4));
-    waveValueAccumulator += Math.sin(2 * Math.PI * toneHarmonicFreq * (s / sampleRateHz)) * 0.04;
-    waveValueAccumulator = Math.max(-0.85, Math.min(0.85, waveValueAccumulator));
-    leftChannelData[s] = waveValueAccumulator;
-    rightChannelData[s] = waveValueAccumulator;
-  }
-  return calculatedBufferObj;
-}
+// ═══════════════════════════════════════════════════════
+// BEAT PREVIEW
+// ═══════════════════════════════════════════════════════
+async function toggleBeatPreview() {
+  if (!STATE.beatBuffer) { showToast('Load a beat first'); return; }
+  const ctx = getAudioCtx();
+  const btn = document.getElementById('beat-play-btn');
+  const icon = document.getElementById('beat-play-icon');
 
-async function toggleVocalRecordingExecutionPipeline() {
-  const context = fetchGlobalAudioContextChannel();
-  if (browserMediaRecorderInstance && browserMediaRecorderInstance.state === "recording") {
-    browserMediaRecorderInstance.stop();
-    return;
-  }
-  if (activeTargetRecordingTrackId === null) {
-    alert("Please arm or add a targeting vocal channel lane strip.");
-    return;
-  }
-  try {
-    localHardwareMicAudioStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-    });
-    capturedAudioChunksBuffer = [];
-    browserMediaRecorderInstance = new MediaRecorder(localHardwareMicAudioStream);
-    
-    browserMediaRecorderInstance.ondataavailable = e => {
-      if (e.data.size > 0) capturedAudioChunksBuffer.push(e.data);
+  if (STATE.beatPreviewPlaying) {
+    if (STATE.beatSource) { try { STATE.beatSource.stop(); } catch(e){} STATE.beatSource = null; }
+    STATE.beatPreviewPlaying = false;
+    btn.classList.remove('playing');
+    icon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+    document.getElementById('beat-bpm-label').textContent =
+      `${STATE.currentBeat?.bpm || '—'} BPM · ${STATE.currentBeat?.genre || ''} · ▶ Preview`;
+  } else {
+    STATE.beatSource = ctx.createBufferSource();
+    STATE.beatSource.buffer = STATE.beatBuffer;
+    STATE.beatSource.loop = true;
+    STATE.beatSource.connect(ctx.destination);
+    STATE.beatSource.start(0);
+    STATE.beatPreviewPlaying = true;
+    btn.classList.add('playing');
+    icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    document.getElementById('beat-bpm-label').textContent = `▶ Playing preview...`;
+    STATE.beatSource.onended = () => {
+      STATE.beatPreviewPlaying = false;
+      btn.classList.remove('playing');
+      icon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
     };
-    browserMediaRecorderInstance.onstop = async () => { await processPostRecordingCompilation(); };
-    browserMediaRecorderInstance.start();
-    triggerSyncTimelinePlaybackChannels();
-    
-    document.getElementById('studio-main-record-btn').classList.add('recording');
-    document.getElementById('studio-main-record-btn').textContent = "⏹";
-    document.getElementById(`lane-status-label-string-${activeTargetRecordingTrackId}`).textContent = "🔴 MONITORING STREAM — RECORDING...";
-  } catch (err) {
-    alert("Browser blocked mic input. Host this file over HTTPS or deployment domains (Vercel) to unlock.");
   }
 }
 
-async function processPostRecordingCompilation() {
-  const context = fetchGlobalAudioContextChannel();
-  stopAllActiveTimelinePlaybackNodes();
-  const currentWorkingTrackId = activeTargetRecordingTrackId;
-  document.getElementById(`lane-status-label-string-${currentWorkingTrackId}`).textContent = "Compiling wave stream array...";
-  if (capturedAudioChunksBuffer.length === 0) return;
-  const rawAudioBlob = new Blob(capturedAudioChunksBuffer, { type: 'audio/webm' });
-  
-  try {
-    const readerBuffer = await rawAudioBlob.arrayBuffer();
-    const decodedAudioObj = await context.decodeAudioData(readerBuffer);
-    const trackObjectMatch = vocalTracksRegistryArray.find(t => t.id === currentWorkingTrackId);
-    if (trackObjectMatch) {
-      trackObjectMatch.audioBufferInstance = decodedAudioObj;
-      document.getElementById(`lane-status-label-string-${currentWorkingTrackId}`).textContent = `Recorded Vocal Take (${decodedAudioObj.duration.toFixed(1)}s)`;
-      document.getElementById(`lane-status-label-string-${currentWorkingTrackId}`).style.color = "var(--neon-green)";
-    }
-  } catch (err) {
-    document.getElementById(`lane-status-label-string-${currentWorkingTrackId}`).textContent = "Data compilation error.";
-  }
-  if (localHardwareMicAudioStream) {
-    localHardwareMicAudioStream.getTracks().forEach(t => t.stop());
-    localHardwareMicAudioStream = null;
+function stopBeatPreview() {
+  if (STATE.beatPreviewPlaying && STATE.beatSource) {
+    try { STATE.beatSource.stop(); } catch(e){}
+    STATE.beatSource = null;
+    STATE.beatPreviewPlaying = false;
+    const btn = document.getElementById('beat-play-btn');
+    const icon = document.getElementById('beat-play-icon');
+    btn.classList.remove('playing');
+    icon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
   }
 }
 
-function triggerNativeAudioFileImportBrowser(trackId) {
-  activeTargetRecordingTrackId = trackId;
-  const browserBridge = document.getElementById('native-vocal-input-bridge');
-  browserBridge.onchange = async (e) => {
-    const targetFile = e.target.files[0];
-    if (!targetFile) return;
-    const context = fetchGlobalAudioContextChannel();
-    document.getElementById(`lane-status-label-string-${trackId}`).textContent = "Parsing track file...";
-    
-    const reader = new FileReader();
-    reader.onload = async (loadEvent) => {
-      try {
-        const decodedVocalBuffer = await context.decodeAudioData(loadEvent.target.result);
-        const trackObjectMatch = vocalTracksRegistryArray.find(t => t.id === trackId);
-        if (trackObjectMatch) {
-          trackObjectMatch.audioBufferInstance = decodedVocalBuffer;
-          document.getElementById(`lane-status-label-string-${trackId}`).textContent = `Imported Stem Voc (${decodedVocalBuffer.duration.toFixed(1)}s)`;
-          document.getElementById(`lane-status-label-string-${trackId}`).style.color = "var(--neon-green)";
-        }
-      } catch (err) {
-        document.getElementById(`lane-status-label-string-${trackId}`).textContent = "Audio processing failure.";
-      }
+// ═══════════════════════════════════════════════════════
+// LANES
+// ═══════════════════════════════════════════════════════
+function initLanes() {
+  addLane();
+}
+
+function addLane() {
+  if (STATE.lanes.length >= 12) { showToast('Max 12 lanes reached'); return; }
+  const id = ++STATE.laneIdCounter;
+  const lane = { id, vol: 0.8, muted: false, armed: true, buffer: null, label: `Vocal ${id}` };
+  STATE.lanes.push(lane);
+  renderLane(lane);
+  updateProfileUI();
+}
+
+function renderLane(lane) {
+  const container = document.getElementById('lanes-container');
+  const el = document.createElement('div');
+  el.className = 'lane armed';
+  el.id = `lane-${lane.id}`;
+  el.innerHTML = `
+    <div class="lane-num">${lane.id}</div>
+    <div class="lane-label">${lane.label}</div>
+    <input class="lane-vol" type="range" min="0" max="1" step="0.01" value="${lane.vol}"
+      oninput="setLaneVol(${lane.id}, this.value)">
+    <button class="lane-mute" id="mute-${lane.id}" onclick="toggleMute(${lane.id})">M</button>
+    <button class="lane-del" onclick="deleteLane(${lane.id})">✕</button>`;
+  container.appendChild(el);
+}
+
+function setLaneVol(id, val) {
+  const lane = STATE.lanes.find(l => l.id === id);
+  if (lane) lane.vol = parseFloat(val);
+}
+
+function toggleMute(id) {
+  const lane = STATE.lanes.find(l => l.id === id);
+  if (!lane) return;
+  lane.muted = !lane.muted;
+  const btn = document.getElementById(`mute-${id}`);
+  btn.classList.toggle('muted', lane.muted);
+}
+
+function deleteLane(id) {
+  STATE.lanes = STATE.lanes.filter(l => l.id !== id);
+  const el = document.getElementById(`lane-${id}`);
+  if (el) el.remove();
+  updateProfileUI();
+}
+
+// ═══════════════════════════════════════════════════════
+// FX PANEL
+// ═══════════════════════════════════════════════════════
+const FX_KEYS = ['C Major','G Major','D Major','A Minor','E Minor','F Major'];
+const FX_PRESETS = [
+  { id:'lead', name:'Lead Vocal', icon:'🎤', desc:'Crisp autotune + light comp', reverb:0.2, delay:0, eq:[{f:200,g:-3},{f:3000,g:4},{f:8000,g:2}] },
+  { id:'warm', name:'Warm Harmonics', icon:'🌊', desc:'Warm reverb + low-end boost', reverb:0.7, delay:0.1, eq:[{f:100,g:3},{f:500,g:2},{f:8000,g:-2}] },
+  { id:'delay', name:'Ambient Delay', icon:'🔮', desc:'Spacious echo + shimmer', reverb:0.5, delay:0.4, eq:[{f:200,g:0},{f:2000,g:2},{f:10000,g:3}] },
+  { id:'doubler', name:'Smart Doubler', icon:'✦', desc:'Pitch clone + stereo wide', reverb:0.3, delay:0.03, eq:[{f:300,g:1},{f:4000,g:3},{f:9000,g:1}] },
+];
+
+function buildFXPanel() {
+  const keyRow = document.getElementById('fx-key-row');
+  FX_KEYS.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'pill-btn' + (k === STATE.activeKey ? ' active' : '');
+    btn.textContent = k;
+    btn.onclick = () => {
+      STATE.activeKey = k;
+      document.querySelectorAll('#fx-key-row .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showToast(`Key: ${k}`);
     };
-    reader.readAsArrayBuffer(targetFile);
+    keyRow.appendChild(btn);
+  });
+
+  const cards = document.getElementById('fx-cards');
+  FX_PRESETS.forEach(fx => {
+    const el = document.createElement('div');
+    el.className = 'fx-card' + (fx.id === STATE.activeFX ? ' active' : '');
+    el.id = `fx-${fx.id}`;
+    el.innerHTML = `<div class="fx-card-icon">${fx.icon}</div><div class="fx-card-name">${fx.name}</div><div class="fx-card-desc">${fx.desc}</div>`;
+    el.onclick = () => {
+      STATE.activeFX = fx.id;
+      document.querySelectorAll('.fx-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      applyFXToMonitor();
+      showToast(`${fx.name} applied`);
+    };
+    cards.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// MONITOR TOGGLE
+// ═══════════════════════════════════════════════════════
+async function toggleMonitor() {
+  const btn = document.getElementById('monitor-toggle');
+  if (!STATE.monitorOn) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      STATE.mediaStream = stream;
+      const ctx = getAudioCtx();
+      const src = ctx.createMediaStreamSource(stream);
+      STATE.fxChain = buildFXChain(ctx);
+      src.connect(STATE.fxChain.input);
+      STATE.fxChain.output.connect(ctx.destination);
+      STATE.monitorNode = src;
+      STATE.monitorOn = true;
+      btn.textContent = '🎧 Monitor: ON';
+      btn.classList.add('on-cyan');
+      showToast('Monitoring live — use headphones!');
+    } catch(e) {
+      showToast('Mic permission denied');
+    }
+  } else {
+    if (STATE.monitorNode) {
+      STATE.monitorNode.disconnect();
+      STATE.monitorNode = null;
+    }
+    if (STATE.fxChain) {
+      STATE.fxChain.output.disconnect();
+      STATE.fxChain = null;
+    }
+    STATE.monitorOn = false;
+    btn.textContent = '🎧 Monitor: OFF';
+    btn.classList.remove('on-cyan');
+    showToast('Monitor off');
+  }
+}
+
+function buildFXChain(ctx) {
+  const preset = FX_PRESETS.find(f => f.id === STATE.activeFX) || FX_PRESETS[0];
+  const input = ctx.createGain();
+  input.gain.value = 1;
+
+  // EQ
+  const eqNodes = preset.eq.map(band => {
+    const f = ctx.createBiquadFilter();
+    f.type = 'peaking';
+    f.frequency.value = band.f;
+    f.gain.value = band.g;
+    f.Q.value = 1.4;
+    return f;
+  });
+
+  // Compressor
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -24;
+  comp.knee.value = 10;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.005;
+  comp.release.value = 0.1;
+
+  // Reverb (convolver with synthetic IR)
+  const reverb = ctx.createConvolver();
+  const irLen = Math.ceil(ctx.sampleRate * preset.reverb * 3);
+  if (irLen > 0) {
+    const ir = ctx.createBuffer(2, irLen, ctx.sampleRate);
+    for (let ch=0; ch<2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i=0; i<irLen; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/irLen, 2);
+    }
+    reverb.buffer = ir;
+  }
+  const reverbGain = ctx.createGain();
+  reverbGain.gain.value = preset.reverb;
+
+  // Delay
+  const delay = ctx.createDelay(1.0);
+  delay.delayTime.value = preset.delay;
+  const delayGain = ctx.createGain();
+  delayGain.gain.value = preset.delay > 0 ? 0.4 : 0;
+
+  // Output
+  const output = ctx.createGain();
+  output.gain.value = 0.9;
+
+  // Chain: input → eq chain → comp → reverb+delay → output
+  let node = input;
+  eqNodes.forEach(eq => { node.connect(eq); node = eq; });
+  node.connect(comp);
+  comp.connect(output);
+  comp.connect(reverb); reverb.connect(reverbGain); reverbGain.connect(output);
+  comp.connect(delay); delay.connect(delayGain); delayGain.connect(output);
+
+  // Smart doubler
+  if (STATE.doublerOn) {
+    const shift = ctx.createDelay(0.05);
+    shift.delayTime.value = 0.025;
+    const shiftGain = ctx.createGain();
+    shiftGain.gain.value = 0.5;
+    comp.connect(shift); shift.connect(shiftGain); shiftGain.connect(output);
+  }
+
+  return { input, output };
+}
+
+function applyFXToMonitor() {
+  if (!STATE.monitorOn) return;
+  // Rebuild chain with new FX
+  if (STATE.monitorNode && STATE.fxChain) {
+    STATE.monitorNode.disconnect();
+    STATE.fxChain.output.disconnect();
+    const ctx = getAudioCtx();
+    STATE.fxChain = buildFXChain(ctx);
+    STATE.monitorNode.connect(STATE.fxChain.input);
+    STATE.fxChain.output.connect(ctx.destination);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTO DOUBLE TOGGLE
+// ═══════════════════════════════════════════════════════
+function toggleDoubler() {
+  STATE.doublerOn = !STATE.doublerOn;
+  const btn = document.getElementById('doubler-toggle');
+  btn.textContent = `✦ Auto Double: ${STATE.doublerOn ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('on-cyan', STATE.doublerOn);
+  if (STATE.monitorOn) applyFXToMonitor();
+  showToast(`Auto Double ${STATE.doublerOn ? 'ON' : 'OFF'}`);
+}
+
+// ═══════════════════════════════════════════════════════
+// RECORDING
+// ═══════════════════════════════════════════════════════
+async function toggleRecord() {
+  const btn = document.getElementById('record-btn');
+  const status = document.getElementById('rec-status');
+
+  if (!STATE.isRecording) {
+    // Start recording
+    try {
+      const stream = STATE.mediaStream || await navigator.mediaDevices.getUserMedia({ audio: true });
+      STATE.mediaStream = stream;
+      const ctx = getAudioCtx();
+
+      // Stop any beat preview first
+      stopBeatPreview();
+
+      // Start beat playback
+      if (STATE.beatBuffer) {
+        STATE.beatSource = ctx.createBufferSource();
+        STATE.beatSource.buffer = STATE.beatBuffer;
+        STATE.beatSource.loop = true;
+        STATE.beatSource.connect(ctx.destination);
+        STATE.beatSource.start(0);
+        STATE.beatPlaying = true;
+        STATE.beatStartTime = ctx.currentTime;
+      }
+
+      // Build FX chain for recording
+      const fxChain = buildFXChain(ctx);
+      const micSrc = ctx.createMediaStreamSource(stream);
+      micSrc.connect(fxChain.input);
+
+      // Capture processed audio via MediaStreamDestination
+      const dest = ctx.createMediaStreamDestination();
+      fxChain.output.connect(dest);
+
+      STATE.mediaRecorder = new MediaRecorder(dest.stream);
+      STATE.recordingChunks = [];
+      STATE.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) STATE.recordingChunks.push(e.data); };
+      STATE.mediaRecorder.onstop = processRecording;
+      STATE.mediaRecorder.start();
+
+      STATE.isRecording = true;
+      STATE.recStartTime = Date.now();
+      btn.classList.add('recording');
+      btn.textContent = '⏹';
+      status.textContent = 'RECORDING...';
+      startTimer();
+
+      // Monitor if on
+      if (STATE.monitorOn && STATE.fxChain) {
+        STATE.monitorNode?.disconnect();
+        STATE.fxChain?.output?.disconnect();
+        micSrc.connect(fxChain.input);
+        fxChain.output.connect(ctx.destination);
+        STATE.monitorNode = micSrc;
+        STATE.fxChain = fxChain;
+      }
+
+    } catch(e) {
+      showToast('Mic access required to record');
+    }
+  } else {
+    // Stop recording
+    STATE.isRecording = false;
+    if (STATE.mediaRecorder && STATE.mediaRecorder.state !== 'inactive') STATE.mediaRecorder.stop();
+    if (STATE.beatSource) { try { STATE.beatSource.stop(); } catch(e){} STATE.beatSource = null; }
+    STATE.beatPlaying = false;
+    stopTimer();
+    btn.classList.remove('recording');
+    btn.textContent = '⏺';
+    status.textContent = 'TAP TO RECORD';
+    document.getElementById('rec-progress').style.width = '0%';
+  }
+}
+
+async function processRecording() {
+  if (STATE.recordingChunks.length === 0) return;
+  const blob = new Blob(STATE.recordingChunks, { type: 'audio/webm' });
+  const arrayBuf = await blob.arrayBuffer();
+  const ctx = getAudioCtx();
+  try {
+    const audioBuf = await ctx.decodeAudioData(arrayBuf);
+    // Find first armed lane
+    const armed = STATE.lanes.find(l => l.armed);
+    if (armed) {
+      armed.buffer = audioBuf;
+      const laneEl = document.getElementById(`lane-${armed.id}`);
+      if (laneEl) { laneEl.classList.remove('armed'); laneEl.classList.add('has-audio'); }
+    }
+    STATE.trackCount++;
+    STATE.recentSessions.unshift({ name: `Session ${STATE.trackCount}`, time: new Date().toLocaleTimeString(), lanes: STATE.lanes.length });
+    if (STATE.recentSessions.length > 5) STATE.recentSessions.pop();
+    renderRecentTracks();
+    updateProfileUI();
+    showToast('Recording saved to lane ✓');
+  } catch(e) { showToast('Could not process recording'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════
+function startTimer() {
+  STATE.timerInterval = setInterval(() => {
+    const elapsed = Date.now() - STATE.recStartTime;
+    const m = Math.floor(elapsed/60000).toString().padStart(2,'0');
+    const s = Math.floor((elapsed%60000)/1000).toString().padStart(2,'0');
+    const cs = Math.floor((elapsed%1000)/10).toString().padStart(2,'0');
+    document.getElementById('session-timer').textContent = `${m}:${s}.${cs}`;
+    const progress = Math.min((elapsed/120000)*100, 100);
+    document.getElementById('rec-progress').style.width = progress+'%';
+  }, 50);
+}
+
+function stopTimer() {
+  clearInterval(STATE.timerInterval);
+  STATE.timerInterval = null;
+}
+
+// ═══════════════════════════════════════════════════════
+// MASTER MIXDOWN
+// ═══════════════════════════════════════════════════════
+async function masterMixdown() {
+  const lanesWithAudio = STATE.lanes.filter(l => l.buffer && !l.muted);
+  if (!lanesWithAudio.length && !STATE.beatBuffer) {
+    showToast('Nothing to mix — record first');
+    return;
+  }
+  showToast('Auto-mixing... please wait');
+
+  const ctx = getAudioCtx();
+  const sr = ctx.sampleRate;
+
+  // Determine length
+  let maxDur = STATE.beatBuffer ? STATE.beatBuffer.duration : 0;
+  lanesWithAudio.forEach(l => { if (l.buffer.duration > maxDur) maxDur = l.buffer.duration; });
+  if (maxDur === 0) { showToast('No audio to export'); return; }
+
+  const offline = new OfflineAudioContext(2, Math.ceil(sr * maxDur), sr);
+
+  // Master compressor
+  const masterComp = offline.createDynamicsCompressor();
+  masterComp.threshold.value = -18;
+  masterComp.knee.value = 8;
+  masterComp.ratio.value = 3;
+  masterComp.attack.value = 0.003;
+  masterComp.release.value = 0.15;
+  masterComp.connect(offline.destination);
+
+  // Master EQ
+  const masterEQ = offline.createBiquadFilter();
+  masterEQ.type = 'highpass';
+  masterEQ.frequency.value = 40;
+  masterEQ.connect(masterComp);
+
+  const masterGain = offline.createGain();
+  masterGain.gain.value = 0.85;
+  masterGain.connect(masterEQ);
+
+  // Beat track
+  if (STATE.beatBuffer) {
+    const beatSrc = offline.createBufferSource();
+    beatSrc.buffer = STATE.beatBuffer;
+    beatSrc.loop = true;
+    const beatGain = offline.createGain();
+    beatGain.gain.value = 0.7;
+    beatSrc.connect(beatGain); beatGain.connect(masterGain);
+    beatSrc.start(0); beatSrc.stop(maxDur);
+  }
+
+  // Vocal lanes with reverb tail
+  for (const lane of lanesWithAudio) {
+    const src = offline.createBufferSource();
+    src.buffer = lane.buffer;
+    const g = offline.createGain();
+    g.gain.value = lane.vol * 1.2;
+
+    // Reverb
+    const rev = offline.createConvolver();
+    const irLen = Math.ceil(sr * 1.5);
+    const ir = offline.createBuffer(2, irLen, sr);
+    for (let ch=0; ch<2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i=0; i<irLen; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/irLen, 1.5);
+    }
+    rev.buffer = ir;
+    const revGain = offline.createGain();
+    revGain.gain.value = 0.25;
+
+    // EQ
+    const eq = offline.createBiquadFilter();
+    eq.type = 'peaking';
+    eq.frequency.value = 3000;
+    eq.gain.value = 3;
+    eq.Q.value = 1.2;
+
+    src.connect(eq); eq.connect(g); g.connect(masterGain);
+    eq.connect(rev); rev.connect(revGain); revGain.connect(masterGain);
+    src.start(0);
+  }
+
+  try {
+    const rendered = await offline.startRendering();
+    const wav = audioBufferToWav(rendered);
+    const blob = new Blob([wav], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vox_studio_master_${STATE.username || 'track'}_${Date.now()}.wav`;
+    a.click();
+    STATE.exportCount++;
+    updateProfileUI();
+    showToast('Master WAV downloaded ✓');
+  } catch(e) { showToast('Mixdown failed: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════════════
+// WAV ENCODER
+// ═══════════════════════════════════════════════════════
+function audioBufferToWav(buf) {
+  const numCh = buf.numberOfChannels;
+  const sr = buf.sampleRate;
+  const len = buf.length;
+  const bitsPerSample = 16;
+  const blockAlign = numCh * bitsPerSample / 8;
+  const byteRate = sr * blockAlign;
+  const dataSize = len * blockAlign;
+  const ab = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(ab);
+  const writeStr = (off, s) => { for (let i=0;i<s.length;i++) view.setUint8(off+i, s.charCodeAt(i)); };
+  writeStr(0,'RIFF'); view.setUint32(4, 36+dataSize, true); writeStr(8,'WAVE');
+  writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
+  view.setUint16(22,numCh,true); view.setUint32(24,sr,true); view.setUint32(28,byteRate,true);
+  view.setUint16(32,blockAlign,true); view.setUint16(34,bitsPerSample,true);
+  writeStr(36,'data'); view.setUint32(40,dataSize,true);
+  let off = 44;
+  for (let i=0; i<len; i++) {
+    for (let ch=0; ch<numCh; ch++) {
+      const s = Math.max(-1, Math.min(1, buf.getChannelData(ch)[i]));
+      view.setInt16(off, s < 0 ? s*32768 : s*32767, true);
+      off += 2;
+    }
+  }
+  return ab;
+}
+
+// ═══════════════════════════════════════════════════════
+// SOCIAL CLIP — 30s CANVAS RECORDING
+// ═══════════════════════════════════════════════════════
+let clipAnimId = null;
+let clipCtx2d = null;
+let clipAudioCtx = null;
+let clipAnalyser = null;
+
+function openClipExport() {
+  document.getElementById('clip-modal').classList.add('open');
+  document.getElementById('clip-status').textContent = 'Preview · Hit Record to capture 30s';
+  document.getElementById('clip-record-btn').textContent = '⏺ Record Clip';
+  startClipPreview();
+}
+
+function closeClipModal() {
+  stopClipPreview();
+  document.getElementById('clip-modal').classList.remove('open');
+}
+
+function startClipPreview() {
+  const canvas = document.getElementById('clip-canvas');
+  clipCtx2d = canvas.getContext('2d');
+  animateClipCanvas(null);
+}
+
+function stopClipPreview() {
+  if (clipAnimId) { cancelAnimationFrame(clipAnimId); clipAnimId = null; }
+}
+
+function animateClipCanvas(analyser) {
+  const canvas = document.getElementById('clip-canvas');
+  const ctx = clipCtx2d;
+  if (!ctx) return;
+  const W = canvas.width, H = canvas.height;
+  const bufLen = analyser ? analyser.frequencyBinCount : 64;
+  const data = new Uint8Array(bufLen);
+
+  function draw() {
+    clipAnimId = requestAnimationFrame(draw);
+    if (analyser) analyser.getByteFrequencyData(data);
+    else for (let i=0;i<bufLen;i++) data[i] = Math.random()*180+30;
+
+    // Background
+    ctx.fillStyle = '#06090e';
+    ctx.fillRect(0, 0, W, H);
+
+    // Gradient overlay
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(0,240,255,0.05)');
+    grad.addColorStop(0.5,'rgba(0,0,0,0)');
+    grad.addColorStop(1,'rgba(255,69,58,0.05)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(0,240,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let y=0; y<H; y+=40) {
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+
+    // Brand name top center
+    ctx.font = 'bold 28px "Space Grotesk", sans-serif';
+    ctx.fillStyle = '#00f0ff';
+    ctx.textAlign = 'center';
+    ctx.fillText('VOX STUDIO', W/2, 52);
+    ctx.font = '14px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillText(STATE.username || 'Artist', W/2, 76);
+
+    // Waveform bars (center)
+    const barW = W / bufLen;
+    const midY = H / 2;
+    for (let i=0; i<bufLen; i++) {
+      const val = data[i] / 255;
+      const h = val * (H * 0.35);
+      const hue = 180 + val * 60;
+      ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+      ctx.fillRect(i * barW, midY - h, barW - 1, h * 2);
+    }
+
+    // Circle visualizer
+    ctx.save();
+    ctx.translate(W/2, H/2);
+    for (let i=0; i<bufLen; i+=2) {
+      const ang = (i / bufLen) * Math.PI * 2;
+      const r = 80 + (data[i]/255) * 40;
+      const x = Math.cos(ang) * r;
+      const y = Math.sin(ang) * r;
+      const alpha = 0.3 + (data[i]/255) * 0.7;
+      ctx.fillStyle = `rgba(0,240,255,${alpha})`;
+      ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    // Artist name bottom
+    ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = '#f0f4ff';
+    ctx.textAlign = 'center';
+    ctx.fillText(STATE.username || 'Artist', W/2, H - 80);
+    ctx.font = '13px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    const beat = STATE.currentBeat;
+    ctx.fillText(beat ? `${beat.name} · ${beat.bpm} BPM` : 'Original Track', W/2, H - 58);
+
+    // Watermark bottom right
+    ctx.font = 'bold 11px "Space Grotesk", sans-serif';
+    ctx.fillStyle = 'rgba(0,240,255,0.6)';
+    ctx.textAlign = 'right';
+    ctx.fillText('voxstudio.app', W - 14, H - 14);
+  }
+  draw();
+}
+
+async function startClipRecording() {
+  const btn = document.getElementById('clip-record-btn');
+  const status = document.getElementById('clip-status');
+  stopClipPreview();
+
+  // Setup analyser from mic or beat
+  const ctx = getAudioCtx();
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 128;
+
+  if (STATE.mediaStream) {
+    const src = ctx.createMediaStreamSource(STATE.mediaStream);
+    src.connect(analyser);
+  }
+  if (STATE.beatBuffer) {
+    const beatSrc = ctx.createBufferSource();
+    beatSrc.buffer = STATE.beatBuffer;
+    beatSrc.loop = true;
+    beatSrc.connect(analyser);
+    beatSrc.connect(ctx.destination);
+    beatSrc.start(0);
+    setTimeout(() => { try { beatSrc.stop(); } catch(e){} }, 31000);
+  }
+
+  animateClipCanvas(analyser);
+
+  // Record canvas stream
+  const canvas = document.getElementById('clip-canvas');
+  let stream;
+  try {
+    stream = canvas.captureStream(30);
+  } catch(e) { showToast('Canvas capture not supported on this browser'); return; }
+
+  const mr = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm' });
+  const chunks = [];
+  mr.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  mr.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `vox_clip_${STATE.username||'artist'}_${Date.now()}.webm`;
+    a.click();
+    showToast('30s clip downloaded ✓');
+    closeClipModal();
   };
-  browserBridge.click();
+
+  let elapsed = 0;
+  btn.textContent = '30s...';
+  btn.disabled = true;
+  status.textContent = 'Recording 30s clip...';
+  mr.start();
+
+  const tick = setInterval(() => {
+    elapsed++;
+    const rem = 30 - elapsed;
+    btn.textContent = `${rem}s remaining`;
+    status.textContent = `Recording: ${elapsed}/30s`;
+    if (elapsed >= 30) {
+      clearInterval(tick);
+      mr.stop();
+      btn.disabled = false;
+      btn.textContent = '⏺ Record Clip';
+    }
+  }, 1000);
 }
 
-function triggerSyncTimelinePlaybackChannels() {
-  const context = fetchGlobalAudioContextChannel();
-  if (isTimelinePlayingState) {
-    stopAllActiveTimelinePlaybackNodes();
+// ═══════════════════════════════════════════════════════
+// PROFILE / RECENT TRACKS
+// ═══════════════════════════════════════════════════════
+const TRACK_COLORS = ['#ff453a','#00f0ff','#7c3aed','#10b981','#f59e0b'];
+function renderRecentTracks() {
+  const container = document.getElementById('recent-tracks');
+  container.innerHTML = '';
+  if (!STATE.recentSessions.length) {
+    container.innerHTML = `<div style="color:var(--text-dim);font-size:13px;padding:12px 0;">No sessions yet — hit Record in Studio</div>`;
     return;
   }
-  trackTimelineStartTimeStamp = Date.now();
-  const schedulingTimeMark = context.currentTime;
-  
-  if (armedInstrumentalAudioBuffer) {
-    activeInstrumentalSourceNode = context.createBufferSource();
-    activeInstrumentalSourceNode.buffer = armedInstrumentalAudioBuffer;
-    activeInstrumentalSourceNode.connect(instrumentalGainNodeNode);
-    activeInstrumentalSourceNode.start(schedulingTimeMark);
-  }
-  vocalTracksRegistryArray.forEach(track => {
-    if (track.audioBufferInstance && !track.isMuted) {
-      track.runtimeSourceNodeInstance = context.createBufferSource();
-      track.runtimeSourceNodeInstance.buffer = track.audioBufferInstance;
-      track.runtimeGainNodeInstance = context.createGain();
-      track.runtimeGainNodeInstance.gain.value = track.volumeFactorValue;
-      track.runtimeSourceNodeInstance.connect(track.runtimeGainNodeInstance).connect(context.destination);
-      track.runtimeSourceNodeInstance.start(schedulingTimeMark);
-    }
+  STATE.recentSessions.forEach((s,i) => {
+    const el = document.createElement('div');
+    el.className = 'recent-track';
+    const color = TRACK_COLORS[i % TRACK_COLORS.length];
+    el.innerHTML = `
+      <div class="rt-bar" style="background:${color}"></div>
+      <div class="rt-info">
+        <div class="rt-name">${s.name}</div>
+        <div class="rt-meta">${s.time} · ${s.lanes} lane${s.lanes!==1?'s':''}</div>
+      </div>`;
+    container.appendChild(el);
   });
-  isTimelinePlayingState = true;
-  clearInterval(clockIntervalTimerId);
-  clockIntervalTimerId = setInterval(() => {
-    const elapsed = (Date.now() - trackTimelineStartTimeStamp) / 1000;
-    const mins = Math.floor(elapsed / 60);
-    const secs = Math.floor(elapsed % 60);
-    const centis = Math.floor((elapsed % 1) * 100);
-    document.getElementById('studio-timer-readout-node').textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(centis).padStart(2,'0')}`;
-  }, 30);
 }
 
-function stopAllActiveTimelinePlaybackNodes() {
-  if (activeInstrumentalSourceNode) {
-    try { activeInstrumentalSourceNode.stop(); } catch(e){}
-    activeInstrumentalSourceNode = null;
-  }
-  vocalTracksRegistryArray.forEach(track => {
-    if (track.runtimeSourceNodeInstance) {
-      try { track.runtimeSourceNodeInstance.stop(); } catch(e){}
-      track.runtimeSourceNodeInstance = null;
-    }
-  });
-  document.getElementById('studio-main-record-btn').classList.remove('recording');
-  document.getElementById('studio-main-record-btn').textContent = "⏺";
-  clearInterval(clockIntervalTimerId);
-  document.getElementById('studio-timer-readout-node').textContent = "00:00.00";
-  isTimelinePlayingState = false;
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-function assignActiveVocalVibeProfile(presetKey) {
-  selectedVibePresetProfileKey = presetKey;
-  document.querySelectorAll('.preset-vibe-pill-card').forEach(p => p.classList.remove('active'));
-  document.getElementById(`preset-node-${presetKey}`).classList.add('active');
-}
-
-async function triggerAutomatedAutoMixdownMastering() {
-  const activePopulatedVocalStems = vocalTracksRegistryArray.filter(t => t.audioBufferInstance);
-  if (activePopulatedVocalStems.length === 0) {
-    alert("Capture or import audio vocal layers before execution.");
-    return;
-  }
-  const modal = document.getElementById('global-mastering-modal');
-  modal.classList.add('visible');
-  document.getElementById('master-processing-box-node').style.display = 'block';
-  document.getElementById('master-success-box-node').style.display = 'none';
-  
-  const narrativeSteps = [
-    "Summing multitrack alignment timelines...",
-    "Injecting Voloco harmonic auto-tuning algorithmic models...",
-    "Injecting spatial expansion delay reflections...",
-    "Compiling mastered production master .WAV package matrix..."
-  ];
-  for (let step = 0; step < narrativeSteps.length; step++) {
-    document.getElementById('mastering-narrative-header-string').textContent = narrativeSteps[step];
-    await new Promise(r => setTimeout(r, 700));
-  }
-  computedFinalMixdownBuffer = await renderOfflineHardwareStudioMixdown(activePopulatedVocalStems);
-  const formattedWavBlob = transcodeBufferTo16BitWavArray(computedFinalMixdownBuffer);
-  document.getElementById('action-download-wav-anchor').href = URL.createObjectURL(formattedWavBlob);
-  document.getElementById('action-download-wav-anchor').download = "voxstudio_master_track.wav";
-  
-  document.getElementById('master-processing-box-node').style.display = 'none';
-  document.getElementById('master-success-box-node').style.display = 'flex';
-}
-
-async function renderOfflineHardwareStudioMixdown(vocalStemsArray) {
-  const context = fetchGlobalAudioContextChannel();
-  let maxDurationTimelineLimit = armedInstrumentalAudioBuffer ? armedInstrumentalAudioBuffer.duration : 0;
-  vocalStemsArray.forEach(v => {
-    if (v.audioBufferInstance.duration > maxDurationTimelineLimit) maxDurationTimelineLimit = v.audioBufferInstance.duration;
-  });
-  const sampleRateHz = context.sampleRate;
-  const totalSamplesBound = Math.ceil(maxDurationTimelineLimit * sampleRateHz);
-  const offlineContext = new OfflineAudioContext(2, totalSamplesBound, sampleRateHz);
-  
-  if (armedInstrumentalAudioBuffer) {
-    const offlineBeatSource = offlineContext.createBufferSource();
-    offlineBeatSource.buffer = armedInstrumentalAudioBuffer;
-    const offlineBeatGain = offlineContext.createGain();
-    offlineBeatGain.gain.value = 0.65;
-    offlineBeatSource.connect(offlineBeatGain).connect(offlineContext.destination);
-    offlineBeatSource.start(0);
-  }
-  vocalStemsArray.forEach(v => {
-    const offlineVocalSource = offlineContext.createBufferSource();
-    offlineVocalSource.buffer = v.audioBufferInstance;
-    const offlineVocalGain = offlineContext.createGain();
-    offlineVocalGain.gain.value = v.volumeFactorValue;
-    
-    const trackingEqNode = offlineContext.createBiquadFilter();
-    trackingEqNode.type = "peaking";
-    if (selectedVibePresetProfileKey === "lead") {
-      trackingEqNode.frequency.setValueAtTime(3100, 0);
-      trackingEqNode.gain.setValueAtTime(4.0, 0);
-    } else if (selectedVibePresetProfileKey === "warm") {
-      trackingEqNode.frequency.setValueAtTime(600, 0);
-      trackingEqNode.gain.setValueAtTime(4.5, 0);
-    } else {
-      trackingEqNode.frequency.setValueAtTime(8000, 0);
-      trackingEqNode.gain.setValueAtTime(2, 0);
-    }
-    const echoDelayNode = offlineContext.createDelay();
-    echoDelayNode.delayTime.setValueAtTime(selectedVibePresetProfileKey === "ambient" ? 0.35 : 0.15, 0);
-    const echoWetGainNode = offlineContext.createGain();
-    echoWetGainNode.gain.value = selectedVibePresetProfileKey === "ambient" ? 0.35 : 0.12;
-    
-    offlineVocalSource.connect(trackingEqNode);
-    trackingEqNode.connect(offlineVocalGain);
-    offlineVocalGain.connect(echoDelayNode);
-    echoDelayNode.connect(echoWetGainNode);
-    offlineVocalGain.connect(offlineContext.destination);
-    echoWetGainNode.connect(offlineContext.destination);
-    offlineVocalSource.start(0);
-  });
-  return await offlineContext.startRendering();
-}
-
-function toggleMixdownPlaybackPreviewChannel() {
-  if (!computedFinalMixdownBuffer) return;
-  const context = fetchGlobalAudioContextChannel();
-  if (isMixdownPreviewActivePlaying && mixdownPreviewPlaybackSourceNode) {
-    try { mixdownPreviewPlaybackSourceNode.stop(); } catch(e){}
-    mixdownPreviewPlaybackSourceNode = null;
-    isMixdownPreviewActivePlaying = false;
-    document.getElementById('action-preview-mix-btn').textContent = "▶ Preview Track Master";
-    return;
-  }
-  mixdownPreviewPlaybackSourceNode = context.createBufferSource();
-  mixdownPreviewPlaybackSourceNode.buffer = computedFinalMixdownBuffer;
-  mixdownPreviewPlaybackSourceNode.connect(context.destination);
-  mixdownPreviewPlaybackSourceNode.start(0);
-  isMixdownPreviewActivePlaying = true;
-  document.getElementById('action-preview-mix-btn').textContent = "⏹ Stop Mix Preview";
-  mixdownPreviewPlaybackSourceNode.onended = () => {
-    isMixdownPreviewActivePlaying = false;
-    document.getElementById('action-preview-mix-btn').textContent = "▶ Preview Track Master";
-  };
-}
-
-function hydrateCommunityFeedMockPosts() {
-  const feed = document.getElementById('community-shared-feed-matrix');
-  feed.innerHTML = "";
-  const initialPosts = [
-    { user: "Ruger_Type_Lord", song: "Bounce Cover Mix V4", duration: "Afrobeat Vibes", initial: "R" },
-    { user: "Omah_Lay_Fan", song: "Understand Vocal Layering", duration: "Soul Afrobeat", initial: "O" }
-  ];
-  initialPosts.forEach(post => { appendPostCardToFeedElement(post.user, post.song, post.duration, post.initial); });
-}
-
-function commitTrackToLocalCommunityFeedBoard() {
-  const activeUser = localStorage.getItem('vox_studio_active_user') || "NewArtist";
-  const activeTrackTitle = document.getElementById('studio-active-track-name-title').textContent;
-  appendPostCardToFeedElement(activeUser, activeTrackTitle, "Mastered Vocals Stack", activeUser.substring(0,1).toUpperCase());
-  userSavedTracksCounter++;
-  document.getElementById('stat-tracks-count-node').textContent = userSavedTracksCounter;
-  dismissMasteringModalOverlay();
-  switchActiveScreenView('home');
-}
-
-function appendPostCardToFeedElement(user, track, text, initial) {
-  const container = document.getElementById('community-shared-feed-matrix');
-  const card = document.createElement('div');
-  card.className = "community-post-card";
-  card.innerHTML = `
-    <div class="post-header-node">
-      <div class="post-avatar-circle">${initial}</div>
-      <div>
-        <div class="post-user-meta-name">${user}</div>
-        <div class="post-user-meta-time">Just now • Published via VoxStudio</div>
-      </div>
-    </div>
-    <div class="post-audio-player-wrapper">
-      <div>
-        <div style="font-size:0.85rem; font-weight:700;">${track}</div>
-        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${text}</div>
-      </div>
-      <button class="post-play-trigger-btn" onclick="alert('Streaming shared community wave node...')">▶</button>
-    </div>
-  `;
-  container.insertBefore(card, container.firstChild);
-}
-
-function dismissMasteringModalOverlay() {
-  if (mixdownPreviewPlaybackSourceNode) {
-    try { mixdownPreviewPlaybackSourceNode.stop(); } catch(e){}
-    mixdownPreviewPlaybackSourceNode = null;
-  }
-  isMixdownPreviewActivePlaying = false;
-  document.getElementById('action-preview-mix-btn').textContent = "▶ Preview Track Master";
-  document.getElementById('global-mastering-modal').classList.remove('visible');
-}
-
-function transcodeBufferTo16BitWavArray(bufferObj) {
-  const channelsCount = bufferObj.numberOfChannels;
-  const sampleRateHz = bufferObj.sampleRate;
-  const totalSamples = bufferObj.length;
-  const byteBuffer = new ArrayBuffer(44 + totalSamples * channelsCount * 2);
-  const view = new DataView(byteBuffer);
-  const writeString = (offset, string) => { for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i)); };
-  
-  writeString(0, 'RIFF');
-  view.setUint32(4, 36 + totalSamples * channelsCount * 2, true);
-  writeString(8, 'WAVE');
-  writeString(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, channelsCount, true);
-  view.setUint32(24, sampleRateHz, true);
-  view.setUint32(28, sampleRateHz * channelsCount * 2, true);
-  view.setUint16(32, channelsCount * 2, true);
-  view.setUint16(34, 16, true);
-  writeString(36, 'data');
-  view.setUint32(40, totalSamples * channelsCount * 2, true);
-  
-  let index = 44;
-  for (let i = 0; i < totalSamples; i++) {
-    for (let c = 0; c < channelsCount; c++) {
-      const floatSample = Math.max(-1, Math.min(1, bufferObj.getChannelData(c)[i]));
-      const int16Sample = floatSample < 0 ? floatSample * 32768 : floatSample * 32767;
-      view.setInt16(index, int16Sample, true);
-      index += 2;
-    }
-  }
-  return new Blob([byteBuffer], { type: 'audio/wav' });
-}
-
-function graphTimelineWaveformRepresentationVector(canvas, bufferObj, strokeColor) {
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width; const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-  const data = bufferObj.getChannelData(0);
-  const step = Math.ceil(data.length / w);
-  const mid = h / 2;
-  ctx.strokeStyle = strokeColor; ctx.lineWidth = 1; ctx.beginPath();
-  for (let x = 0; x < w; x++) {
-    let min = 1; let max = -1;
-    for (let offset = 0; offset < step; offset += 8) {
-      const idx = x * step + offset;
-      const val = data[idx] || 0;
-      if (val < min) min = val; if (val > max) max = val;
-    }
-    ctx.moveTo(x, mid + (min * mid * 0.85)); ctx.lineTo(x, mid + (max * mid * 0.85));
-  }
-  ctx.stroke();
-}
+// ═══════════════════════════════════════════════════════
+// INIT USERNAME ENTER ON LOAD
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  document.getElementById('username-input').focus();
+});
 </script>
 </body>
 </html>
